@@ -78,6 +78,7 @@ npm run dev:docker
 ```
 
 This runs `scripts/dev.sh` which:
+
 - Checks for `.env.development`
 - Starts Neon Local (PostgreSQL proxy) and the app
 - Runs database migrations
@@ -133,28 +134,28 @@ acquisitions/
 
 ## Available Scripts
 
-| Command | Description |
-|---------|-------------|
-| `npm start` | Production start |
-| `npm run dev` | Development with hot-reload |
-| `npm test` | Run tests |
-| `npm run lint` | Lint check |
-| `npm run lint:fix` | Auto-fix lint issues |
-| `npm run format` | Format with Prettier |
-| `npm run format:check` | Check formatting |
-| `npm run db:generate` | Generate Drizzle migration |
-| `npm run db:migrate` | Apply migrations |
-| `npm run db:studio` | Open Drizzle Studio |
-| `npm run dev:docker` | Start Docker dev environment |
-| `npm run prod:docker` | Start Docker prod environment |
+| Command                | Description                   |
+| ---------------------- | ----------------------------- |
+| `npm start`            | Production start              |
+| `npm run dev`          | Development with hot-reload   |
+| `npm test`             | Run tests                     |
+| `npm run lint`         | Lint check                    |
+| `npm run lint:fix`     | Auto-fix lint issues          |
+| `npm run format`       | Format with Prettier          |
+| `npm run format:check` | Check formatting              |
+| `npm run db:generate`  | Generate Drizzle migration    |
+| `npm run db:migrate`   | Apply migrations              |
+| `npm run db:studio`    | Open Drizzle Studio           |
+| `npm run dev:docker`   | Start Docker dev environment  |
+| `npm run prod:docker`  | Start Docker prod environment |
 
 ## Import Aliases
 
 The project uses Node.js subpath imports via `package.json`:
 
 ```javascript
-import logger from '#config/logger.js';          // src/config/logger.js
-import authRoutes from '#routes/auth.routes.js';  // src/routes/auth.routes.js
+import logger from '#config/logger.js'; // src/config/logger.js
+import authRoutes from '#routes/auth.routes.js'; // src/routes/auth.routes.js
 import { createUser } from '#services/auth.service.js'; // src/services/auth.service.js
 ```
 
@@ -189,10 +190,12 @@ node --experimental-vm-modules node_modules/.bin/jest --inspect
 ### Logs
 
 All logs are written to `logs/`:
+
 - `logs/combined.log` — All log levels
 - `logs/error.lg` — Error level only
 
 Tail logs in real-time:
+
 ```bash
 tail -f logs/combined.log
 ```
@@ -221,13 +224,13 @@ NODE_ENV=production DATABASE_URL=... JWT_SECRET=... ARCJET_KEY=... npm start
 
 ## Common Issues
 
-| Issue | Cause | Solution |
-|-------|-------|----------|
-| `ECONNREFUSED` on DB connection | Neon Local not running | Start Docker dev environment |
-| JWT verification fails | Wrong JWT_SECRET between auth and request | Ensure consistent JWT_SECRET |
-| Rate limit exceeded | Too many requests in time window | Wait or check Arcjet config |
-| OAuth/SSO not working | Not implemented | Use sign-up/sign-in endpoints |
-| Tests fail with DB errors | Missing DATABASE_URL in test env | Set DATABASE_URL for tests |
+| Issue                           | Cause                                     | Solution                      |
+| ------------------------------- | ----------------------------------------- | ----------------------------- |
+| `ECONNREFUSED` on DB connection | Neon Local not running                    | Start Docker dev environment  |
+| JWT verification fails          | Wrong JWT_SECRET between auth and request | Ensure consistent JWT_SECRET  |
+| Rate limit exceeded             | Too many requests in time window          | Wait or check Arcjet config   |
+| OAuth/SSO not working           | Not implemented                           | Use sign-up/sign-in endpoints |
+| Tests fail with DB errors       | Missing DATABASE_URL in test env          | Set DATABASE_URL for tests    |
 
 ## Quick Architecture Reference
 
@@ -243,13 +246,13 @@ flowchart LR
 
 ## Source Files to Read First
 
-| Order | File | Why |
-|-------|------|-----|
-| 1 | `src/app.js` | Understand the full middleware stack and routes |
-| 2 | `src/controllers/auth.controller.js` | See auth flow implementation |
-| 3 | `src/middleware/auth.middleware.js` | Understand JWT auth and role checks |
-| 4 | `src/middleware/security.middleware.js` | See Arcjet security integration |
-| 5 | `src/services/auth.service.js` | Understand business logic |
-| 6 | `src/models/user.model.js` | See database schema |
-| 7 | `Dockerfile` | Understand container build |
-| 8 | `tests/app.test.js` | See testing patterns |
+| Order | File                                    | Why                                             |
+| ----- | --------------------------------------- | ----------------------------------------------- |
+| 1     | `src/app.js`                            | Understand the full middleware stack and routes |
+| 2     | `src/controllers/auth.controller.js`    | See auth flow implementation                    |
+| 3     | `src/middleware/auth.middleware.js`     | Understand JWT auth and role checks             |
+| 4     | `src/middleware/security.middleware.js` | See Arcjet security integration                 |
+| 5     | `src/services/auth.service.js`          | Understand business logic                       |
+| 6     | `src/models/user.model.js`              | See database schema                             |
+| 7     | `Dockerfile`                            | Understand container build                      |
+| 8     | `tests/app.test.js`                     | See testing patterns                            |

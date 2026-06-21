@@ -7,6 +7,7 @@
 The JWT cookie implementation involves several non-obvious security considerations:
 
 **Cookie Attributes**:
+
 ```javascript
 // src/utils/cookies.js
 httpOnly: true,           // Prevents XSS theft
@@ -20,12 +21,18 @@ maxAge: 15 * 60 * 1000,   // 15 minutes
 **Missing**: No `__Host-` prefix for cookie, no `domain` attribute restriction.
 
 **JWT Payload Structure**:
+
 ```javascript
 // src/controllers/auth.controller.js:18
-const token = jwttoken.sign({ id: user.id, email: user.email, role: user.role });
+const token = jwttoken.sign({
+  id: user.id,
+  email: user.email,
+  role: user.role,
+});
 ```
 
 The JWT contains `id`, `email`, and `role`. Notably, it does NOT contain:
+
 - `iat` (issued at) — automatically added by jsonwebtoken
 - `sub` (subject) — should be the user ID
 - `jti` (JWT ID) — for token revocation
@@ -61,6 +68,7 @@ if (e.message === 'User with this email already exists') {
 ```
 
 This is brittle because:
+
 - If the error message changes in the service, controllers break
 - TypeScript cannot catch string mismatches
 - No error hierarchy or error codes
@@ -69,7 +77,11 @@ This is brittle because:
 
 ```javascript
 class DuplicateEmailError extends Error {
-  constructor() { super('Email already exists'); this.code = 'DUPLICATE_EMAIL'; this.status = 409; }
+  constructor() {
+    super('Email already exists');
+    this.code = 'DUPLICATE_EMAIL';
+    this.status = 409;
+  }
 }
 ```
 
@@ -100,6 +112,7 @@ neon-local:
 ### 1. Why No Password Reset?
 
 The project intentionally omits password reset functionality. This is either:
+
 - An architectural decision to keep the scope focused on core auth
 - A feature left for future implementation
 
@@ -108,6 +121,7 @@ Given the educational context, it's likely the latter. In production, password r
 ### 2. Why Admin Role During Registration?
 
 The signup schema allows setting `role: 'admin'`:
+
 ```javascript
 // src/validations/auth.validation.js:7
 role: z.enum(['user', 'admin']).default('user'),
@@ -120,6 +134,7 @@ This means anyone can register as an admin by sending `role: 'admin'`. In a real
 ### 3. Why No Refresh Tokens?
 
 JWT tokens expire in 1 day with no refresh mechanism. This means:
+
 - Users must re-authenticate every day
 - No way to extend sessions without re-login
 - No way to revoke access mid-session
@@ -128,19 +143,20 @@ JWT tokens expire in 1 day with no refresh mechanism. This means:
 
 ## Architectural Tradeoffs
 
-| Tradeoff | Decision | Cost | Benefit |
-|----------|----------|------|---------|
-| Single process vs microservices | Single Express server | Limited scalability | Simple deployment, no orchestration needed |
-| Stateless JWT vs sessions | JWT | No revocation, 1-day expiry | No server-side state, easy horizontal scaling |
-| File logging vs centralized | Winston to files | No log aggregation, disk pressure | Simple setup, no external dependency |
-| Global Arcjet vs per-route | Global (app.use) | Every request hits Arcjet | Simple configuration, consistent protection |
-| No TypeScript | JavaScript | No static types, runtime errors | Faster development, lower barrier to entry |
+| Tradeoff                        | Decision              | Cost                              | Benefit                                       |
+| ------------------------------- | --------------------- | --------------------------------- | --------------------------------------------- |
+| Single process vs microservices | Single Express server | Limited scalability               | Simple deployment, no orchestration needed    |
+| Stateless JWT vs sessions       | JWT                   | No revocation, 1-day expiry       | No server-side state, easy horizontal scaling |
+| File logging vs centralized     | Winston to files      | No log aggregation, disk pressure | Simple setup, no external dependency          |
+| Global Arcjet vs per-route      | Global (app.use)      | Every request hits Arcjet         | Simple configuration, consistent protection   |
+| No TypeScript                   | JavaScript            | No static types, runtime errors   | Faster development, lower barrier to entry    |
 
 ## Production Concerns
 
 ### 1. Database Connection Management
 
 The current Neon connection:
+
 ```javascript
 const sql = neon(process.env.DATABASE_URL);
 ```
@@ -150,6 +166,7 @@ Creates a single connection client. In production, this should use Neon's pooled
 ### 2. Logging Volume
 
 Winston writes every log to `logs/combined.log` without rotation. In production:
+
 - Log files could grow unbounded (disk pressure)
 - No log retention policy
 - No log shipping (ELK, Loki, etc.)
@@ -157,6 +174,7 @@ Winston writes every log to `logs/combined.log` without rotation. In production:
 ### 3. Graceful Shutdown
 
 The server does not handle `SIGTERM`/`SIGINT` for graceful shutdown. When Docker sends `SIGTERM`:
+
 - In-flight requests are abruptly terminated
 - Database connections are not closed cleanly
 - Log buffers may not flush
@@ -172,13 +190,13 @@ The server does not handle `SIGTERM`/`SIGINT` for graceful shutdown. When Docker
 
 ## Source Files Evidence
 
-| Topic | File | Line(s) |
-|-------|------|---------|
-| Cookie config | `src/utils/cookies.js` | 3-7 |
-| JWT sign | `src/utils/jwt.js` | 8-11 |
-| Security middleware order | `src/app.js` | 15 (security) vs 13 (cookie parser before routes) |
-| Rate limit role default | `src/middleware/security.middleware.js` | 6 |
-| Error string matching | `src/controllers/auth.controller.js` | 28, 57 |
-| Admin role in signup | `src/validations/auth.validation.js` | 7 |
-| Graceful shutdown missing | `src/server.js` | No signal handlers |
-| Neon connection | `src/config/database.js` | 11 |
+| Topic                     | File                                    | Line(s)                                           |
+| ------------------------- | --------------------------------------- | ------------------------------------------------- |
+| Cookie config             | `src/utils/cookies.js`                  | 3-7                                               |
+| JWT sign                  | `src/utils/jwt.js`                      | 8-11                                              |
+| Security middleware order | `src/app.js`                            | 15 (security) vs 13 (cookie parser before routes) |
+| Rate limit role default   | `src/middleware/security.middleware.js` | 6                                                 |
+| Error string matching     | `src/controllers/auth.controller.js`    | 28, 57                                            |
+| Admin role in signup      | `src/validations/auth.validation.js`    | 7                                                 |
+| Graceful shutdown missing | `src/server.js`                         | No signal handlers                                |
+| Neon connection           | `src/config/database.js`                | 11                                                |

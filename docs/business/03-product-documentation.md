@@ -9,6 +9,7 @@
 **User Impact**: Allows new users to join the system. Sets a JWT cookie upon successful registration, establishing an authenticated session immediately.
 
 **Technical Implementation**:
+
 - Zod schema validates: name (2-255 chars), email (valid format, lowercased), password (6-128 chars), role (enum: 'user' | 'admin', default 'user')
 - Duplicate email check prevents account duplication
 - Password hashed with bcrypt (10 salt rounds)
@@ -24,6 +25,7 @@
 **User Impact**: Returns user data and sets a session cookie.
 
 **Technical Implementation**:
+
 - Zod validates email and password
 - Email lookup via Drizzle ORM
 - bcrypt.compare for password verification
@@ -45,6 +47,7 @@
 **User Impact**: Admins can view the user roster.
 
 **Technical Implementation**:
+
 - Requires valid JWT cookie (authentication)
 - Uses Drizzle `select` with explicit field projection (excludes password hash)
 - Returns count alongside users array
@@ -56,6 +59,7 @@
 **User Impact**: View specific user profile.
 
 **Technical Implementation**:
+
 - ID validated as numeric string via Zod, transformed to positive integer
 - 404 if user not found
 
@@ -66,6 +70,7 @@
 **User Impact**: Users can update their own profile. Admins can update any profile.
 
 **Technical Implementation**:
+
 - Authorization logic:
   - Must be authenticated
   - Non-admin users can only update their own profile (403 otherwise)
@@ -80,6 +85,7 @@
 **User Impact**: Only admins can delete users. Self-deletion is blocked.
 
 **Technical Implementation**:
+
 - Requires `requireRole(['admin'])` middleware
 - Self-deletion explicitly blocked (403)
 - User existence verified before deletion
@@ -91,6 +97,7 @@
 **User Impact**: Legitimate users experience rate limits. Bots are blocked.
 
 **Technical Implementation**:
+
 - Runs on every request via `app.use(securityMiddleware)`
 - Arcjet Shield: Blocks common web attacks (SQL injection, XSS, etc.)
 - Bot Detection: Blocks automated requests, allows search engines and preview crawlers
@@ -114,6 +121,7 @@
 **User Impact**: Developers can trace errors and monitor usage.
 
 **Technical Implementation**:
+
 - Winston logger with JSON format
 - Transports: `logs/error.lg` (error level only), `logs/combined.log` (all levels)
 - Console transport in non-production environments with colorization
@@ -122,16 +130,16 @@
 
 ## Modules
 
-| Module | Files | Responsibility |
-|--------|-------|----------------|
-| **Config** | `src/config/` | Database, logger, Arcjet initialization |
-| **Controllers** | `src/controllers/` | Request handling, response formatting |
-| **Middleware** | `src/middleware/` | Auth verification, security checks |
-| **Models** | `src/models/` | Drizzle ORM schema definition |
-| **Routes** | `src/routes/` | HTTP route definitions |
-| **Services** | `src/services/` | Business logic, database operations |
-| **Utils** | `src/utils/` | JWT, cookies, formatting helpers |
-| **Validations** | `src/validations/` | Zod schema definitions |
+| Module          | Files              | Responsibility                          |
+| --------------- | ------------------ | --------------------------------------- |
+| **Config**      | `src/config/`      | Database, logger, Arcjet initialization |
+| **Controllers** | `src/controllers/` | Request handling, response formatting   |
+| **Middleware**  | `src/middleware/`  | Auth verification, security checks      |
+| **Models**      | `src/models/`      | Drizzle ORM schema definition           |
+| **Routes**      | `src/routes/`      | HTTP route definitions                  |
+| **Services**    | `src/services/`    | Business logic, database operations     |
+| **Utils**       | `src/utils/`       | JWT, cookies, formatting helpers        |
+| **Validations** | `src/validations/` | Zod schema definitions                  |
 
 ## Capabilities
 
@@ -149,18 +157,18 @@
 
 ## Limitations
 
-| Limitation | Impact | Mitigation |
-|-----------|--------|------------|
-| **No email verification** | Users can register with any email | Add email verification flow |
-| **No password reset** | Users cannot recover accounts | Add forgot/reset password endpoints |
-| **No refresh tokens** | JWT expires in 1 day, no refresh mechanism | Implement refresh token rotation |
-| **No pagination** | `GET /api/users` returns all users at once | Add cursor or offset pagination |
-| **No search/filter** | No way to filter users by name/role/date | Add query parameter support |
-| **No session invalidation** | No way to revoke tokens server-side | Implement token blacklist |
-| **Single table** | Only `users` table exists | Add more domain tables |
-| **No frontend** | API-only, no UI | Build client application |
-| **Minimal test coverage** | Only 3 basic health tests | Expand test coverage |
-| **Credentials in .env** | `.env` is committed with real secrets | Move to environment-specific files |
+| Limitation                  | Impact                                     | Mitigation                          |
+| --------------------------- | ------------------------------------------ | ----------------------------------- |
+| **No email verification**   | Users can register with any email          | Add email verification flow         |
+| **No password reset**       | Users cannot recover accounts              | Add forgot/reset password endpoints |
+| **No refresh tokens**       | JWT expires in 1 day, no refresh mechanism | Implement refresh token rotation    |
+| **No pagination**           | `GET /api/users` returns all users at once | Add cursor or offset pagination     |
+| **No search/filter**        | No way to filter users by name/role/date   | Add query parameter support         |
+| **No session invalidation** | No way to revoke tokens server-side        | Implement token blacklist           |
+| **Single table**            | Only `users` table exists                  | Add more domain tables              |
+| **No frontend**             | API-only, no UI                            | Build client application            |
+| **Minimal test coverage**   | Only 3 basic health tests                  | Expand test coverage                |
+| **Credentials in .env**     | `.env` is committed with real secrets      | Move to environment-specific files  |
 
 ## Future Extensibility Opportunities
 
@@ -177,15 +185,15 @@
 
 ## Source Files Evidence
 
-| Feature | Primary File |
-|---------|-------------|
-| Registration | `src/controllers/auth.controller.js:11-40`, `src/services/auth.service.js:26-42` |
-| Sign-In | `src/controllers/auth.controller.js:42-64`, `src/services/auth.service.js:44-60` |
-| Sign-Out | `src/controllers/auth.controller.js:66-75` |
-| List Users | `src/controllers/users.controller.js:6-14` |
-| Get User | `src/controllers/users.controller.js:16-30` |
-| Update User | `src/controllers/users.controller.js:32-64` |
-| Delete User | `src/controllers/users.controller.js:66-86` |
-| Security | `src/middleware/security.middleware.js` |
-| Auth Middleware | `src/middleware/auth.middleware.js` |
-| Health Check | `src/app.js:27-33` |
+| Feature         | Primary File                                                                     |
+| --------------- | -------------------------------------------------------------------------------- |
+| Registration    | `src/controllers/auth.controller.js:11-40`, `src/services/auth.service.js:26-42` |
+| Sign-In         | `src/controllers/auth.controller.js:42-64`, `src/services/auth.service.js:44-60` |
+| Sign-Out        | `src/controllers/auth.controller.js:66-75`                                       |
+| List Users      | `src/controllers/users.controller.js:6-14`                                       |
+| Get User        | `src/controllers/users.controller.js:16-30`                                      |
+| Update User     | `src/controllers/users.controller.js:32-64`                                      |
+| Delete User     | `src/controllers/users.controller.js:66-86`                                      |
+| Security        | `src/middleware/security.middleware.js`                                          |
+| Auth Middleware | `src/middleware/auth.middleware.js`                                              |
+| Health Check    | `src/app.js:27-33`                                                               |
