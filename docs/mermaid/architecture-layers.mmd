@@ -1,0 +1,36 @@
+graph TB
+    subgraph "Presentation Layer"
+        Routes["auth.routes.js<br/>users.routes.js"]
+        Controllers["auth.controller.js<br/>users.controller.js"]
+    end
+    
+    subgraph "Application Layer"
+        Middleware["auth.middleware.js<br/>security.middleware.js"]
+        Validations["auth.validation.js<br/>users.validation.js"]
+    end
+    
+    subgraph "Domain Layer"
+        Services["auth.service.js<br/>users.service.js"]
+        Models["user.model.js"]
+    end
+    
+    subgraph "Infrastructure Layer"
+        Config["database.js<br/>logger.js<br/>arcjet.js"]
+        Utils["jwt.js<br/>cookies.js<br/>format.js"]
+    end
+    
+    subgraph "Data Layer"
+        DB[("Neon PostgreSQL")]
+        Drizzle["Drizzle ORM"]
+    end
+    
+    Routes --> Controllers
+    Controllers --> Middleware
+    Controllers --> Validations
+    Controllers --> Services
+    Services --> Models
+    Services --> Config
+    Models --> Drizzle
+    Config --> Utils
+    Config --> Drizzle
+    Drizzle --> DB

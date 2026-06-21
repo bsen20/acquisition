@@ -1,0 +1,21 @@
+graph TB
+    subgraph "Defense Layers"
+        L1["Layer 1: Helmet Security Headers"]
+        L2["Layer 2: CORS Policy"]
+        L3["Layer 3: Arcjet Shield (Attack Detection)"]
+        L4["Layer 4: Arcjet Bot Detection"]
+        L5["Layer 5: Arcjet Rate Limiting"]
+        L6["Layer 6: Input Validation (Zod)"]
+        L7["Layer 7: Authentication (JWT)"]
+        L8["Layer 8: Authorization (Role Check)"]
+    end
+    
+    Request[Request] --> L1
+    L1 --> L2
+    L2 --> L3
+    L3 --> L4
+    L4 --> L5
+    L5 --> L6
+    L6 --> L7
+    L7 --> L8
+    L8 --> API[Protected API]

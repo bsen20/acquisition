@@ -1,0 +1,55 @@
+sequenceDiagram
+    participant Client
+    participant Express as Express Engine
+    participant Helmet as Helmet
+    participant CORS as CORS
+    participant Parser as Body Parser
+    participant CP as Cookie Parser
+    participant Morgan as Morgan/Winston
+    participant Arcjet as Arcjet Security
+    participant Auth as Auth Middleware
+    participant Controller
+    participant Zod as Zod Validation
+    participant Service
+    participant Drizzle as Drizzle ORM
+    participant DB as Neon PostgreSQL
+    
+    Client->>Express: HTTP Request
+    Express->>Helmet: Set security headers
+    Express->>CORS: Check origin
+    Express->>Parser: Parse JSON body
+    Express->>CP: Parse cookies
+    Express->>Morgan: Log request
+    
+    Express->>Arcjet: protect(req)
+    alt Blocked
+        Arcjet-->>Express: 403
+        Express-->>Client: Error
+    end
+    
+    Express->>Express: Route matching
+    
+    alt Auth Route
+        Express->>Controller: auth.controller
+        Controller->>Zod: Validate body
+        Controller->>Service: auth.service
+        Service->>Drizzle: Query
+        Drizzle->>DB: SQL
+        Service-->>Controller: User
+        Controller->>Controller: Sign JWT
+        Controller->>Controller: Set cookie
+        Controller-->>Express: 200/201
+        Express-->>Client: JSON + Cookie
+    else Protected Route
+        Express->>Auth: authenticateToken
+        alt Unauthorized
+            Auth-->>Express: 401
+        end
+        Express->>Controller: users.controller
+        Controller->>Service: users.service
+        Service->>Drizzle: Query
+        Drizzle->>DB: SQL
+        Service-->>Controller: Result
+        Controller-->>Express: 200 JSON
+        Express-->>Client: Response
+    end

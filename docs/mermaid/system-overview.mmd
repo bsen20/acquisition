@@ -1,0 +1,17 @@
+graph TB
+    Client[Client / Browser]
+    API[Express API :3000]
+    Auth[Auth Routes /api/auth]
+    Users[User Routes /api/users]
+    Arcjet[Arcjet Security Middleware]
+    DB[(Neon PostgreSQL)]
+    
+    Client --> API
+    API --> Arcjet
+    Arcjet --> Auth
+    Arcjet --> Users
+    Auth --> AuthService[Auth Service]
+    Users --> UserService[User Service]
+    AuthService --> DB
+    UserService --> DB
+    AuthService --> JWT[JWT Tokens]

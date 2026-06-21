@@ -1,0 +1,37 @@
+graph TB
+    subgraph "Local Development"
+        DockerDev[Docker Engine]
+        NeoLocal[Neon Local :5432]
+        AppDev[App Dev :3000]
+        DockerDev --> AppDev
+        DockerDev --> NeoLocal
+        AppDev --> NeoLocal
+    end
+    
+    subgraph "CI/CD (GitHub Actions)"
+        LintJob[Lint & Format]
+        TestJob[Tests]
+        BuildJob[Docker Build & Push]
+        LintJob --> TestJob
+        TestJob --> BuildJob
+    end
+    
+    subgraph "Container Registry"
+        DH[Docker Hub]
+        AM64["linux/amd64"]
+        ARM64["linux/arm64"]
+    end
+    
+    subgraph "Production"
+        DockerProd[Docker Engine]
+        AppProd[App Prod :3000]
+        NeoCloud[Neon Cloud PostgreSQL]
+        DockerProd --> AppProd
+        AppProd --> NeoCloud
+    end
+    
+    BuildJob --> DH
+    DH --> AM64
+    DH --> ARM64
+    AM64 -.-> DockerProd
+    ARM64 -.-> DockerProd
