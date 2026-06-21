@@ -34,12 +34,11 @@
 >
 > **Detailed Architecture**:
 >
-> _Startup Sequence_: `src/index.js` loads environment variables via dotenv, then imports `src/server.js`, which imports `src/app.js`. During import, all modules are initialized: Express app is created, middleware is registered in order (helmet, cors, JSON parser, URL-encoded parser, cookie-parser, morgan logging, Arcjet security), routes are mounted (auth at `/api/auth`, users at `/api/users`), and fallback 404 handler is added.
+> *Startup Sequence*: `src/index.js` loads environment variables via dotenv, then imports `src/server.js`, which imports `src/app.js`. During import, all modules are initialized: Express app is created, middleware is registered in order (helmet, cors, JSON parser, URL-encoded parser, cookie-parser, morgan logging, Arcjet security), routes are mounted (auth at `/api/auth`, users at `/api/users`), and fallback 404 handler is added.
 >
-> _Request Lifecycle_: Every request goes through ~8 layers before reaching business logic. Let me trace a sign-in request: The request enters Express, passes through Helmet (headers), CORS (origin check), body parsers, cookie parser, Morgan (logging), then the Arcjet security middleware (bot detection, shield, rate limiting). After passing security, the route matches `/api/auth/sign-in`, which calls the auth controller. The controller validates input with Zod, calls the auth service, which queries the database by email, compares password with bcrypt, returns user data. The controller then signs a JWT, sets it as a cookie, and returns the JSON response. All of this is logged via Winston.
+> *Request Lifecycle*: Every request goes through ~8 layers before reaching business logic. Let me trace a sign-in request: The request enters Express, passes through Helmet (headers), CORS (origin check), body parsers, cookie parser, Morgan (logging), then the Arcjet security middleware (bot detection, shield, rate limiting). After passing security, the route matches `/api/auth/sign-in`, which calls the auth controller. The controller validates input with Zod, calls the auth service, which queries the database by email, compares password with bcrypt, returns user data. The controller then signs a JWT, sets it as a cookie, and returns the JSON response. All of this is logged via Winston.
 >
-> _Security Architecture_: Defense in depth with 8 layers:
->
+> *Security Architecture*: Defense in depth with 8 layers:
 > 1. Helmet security headers
 > 2. CORS origin policy
 > 3. Arcjet Shield (attack detection)
@@ -49,21 +48,21 @@
 > 7. JWT Authentication (httpOnly cookie)
 > 8. Role-Based Authorization
 >
-> _Database Design_: Single `users` table with serial primary key, unique email constraint, bcrypt password hash, string role field, and automatic timestamps. This is intentionally simple for the auth-focused scope. Future expansion would add more domain tables.
+> *Database Design*: Single `users` table with serial primary key, unique email constraint, bcrypt password hash, string role field, and automatic timestamps. This is intentionally simple for the auth-focused scope. Future expansion would add more domain tables.
 >
-> _Infrastructure_: Docker multi-stage builds using Node 18 Alpine base. Development environment includes Neon Local (ephemeral PostgreSQL proxy) with hot-reload via volume mounts. Production environment has resource limits (512MB memory, 0.5 CPU), health checks, and connects to Neon Cloud. CI/CD runs on GitHub Actions with three workflows: lint/format, tests, and Docker build/push (multi-architecture: amd64 + arm64).
+> *Infrastructure*: Docker multi-stage builds using Node 18 Alpine base. Development environment includes Neon Local (ephemeral PostgreSQL proxy) with hot-reload via volume mounts. Production environment has resource limits (512MB memory, 0.5 CPU), health checks, and connects to Neon Cloud. CI/CD runs on GitHub Actions with three workflows: lint/format, tests, and Docker build/push (multi-architecture: amd64 + arm64).
 >
 > **Design Decisions Deep Dive**:
 >
-> _Why Express not Fastify?_: Express has the largest middleware ecosystem, more tutorials, and is the standard teaching framework for Node.js. The performance difference (~2x) is negligible at this scale.
+> *Why Express not Fastify?*: Express has the largest middleware ecosystem, more tutorials, and is the standard teaching framework for Node.js. The performance difference (~2x) is negligible at this scale.
 >
-> _Why JWT over Sessions?_: Stateless authentication means no Redis/server-side storage, easy horizontal scaling by adding more containers. The cost is no token revocation — if a JWT is compromised, it's valid until expiry.
+> *Why JWT over Sessions?*: Stateless authentication means no Redis/server-side storage, easy horizontal scaling by adding more containers. The cost is no token revocation — if a JWT is compromised, it's valid until expiry.
 >
-> _Why httpOnly Cookies over Bearer Token?_: httpOnly prevents XSS token theft. SameSite=Strict prevents CSRF. The tradeoff is that only browser clients work natively — mobile apps would need a different auth header approach.
+> *Why httpOnly Cookies over Bearer Token?*: httpOnly prevents XSS token theft. SameSite=Strict prevents CSRF. The tradeoff is that only browser clients work natively — mobile apps would need a different auth header approach.
 >
-> _Why Neon?_: Serverless PostgreSQL with database branching enables ephemeral databases for development and testing. The pooling URL handles connection management. The tradeoff is cold start latency and vendor lock-in.
+> *Why Neon?*: Serverless PostgreSQL with database branching enables ephemeral databases for development and testing. The pooling URL handles connection management. The tradeoff is cold start latency and vendor lock-in.
 >
-> _Why Drizzle over Prisma?_: Drizzle is lighter (no code generation), has a SQL-like API (thin abstraction), and integrates well with Neon serverless. Prisma's heavier abstraction and code generation add unnecessary overhead for this scope.
+> *Why Drizzle over Prisma?*: Drizzle is lighter (no code generation), has a SQL-like API (thin abstraction), and integrates well with Neon serverless. Prisma's heavier abstraction and code generation add unnecessary overhead for this scope.
 >
 > **Production Concerns**:
 >
@@ -77,7 +76,6 @@
 > 8. No connection pooling for Neon.
 >
 > **Interview Talking Points**:
->
 > - Authentication architecture and JWT security
 > - Defense-in-depth security strategy
 > - Docker multi-stage build optimization

@@ -2,14 +2,14 @@
 
 ## API Overview
 
-| Attribute          | Value                                      |
-| ------------------ | ------------------------------------------ |
-| **Base URL**       | `http://localhost:3000` (default)          |
-| **Protocol**       | HTTP (HTTPS in production)                 |
-| **Format**         | JSON                                       |
-| **Authentication** | JWT via httpOnly Cookie (`token`)          |
-| **Security**       | Helmet headers, CORS, Arcjet rate limiting |
-| **Validation**     | Zod                                        |
+| Attribute | Value |
+|-----------|-------|
+| **Base URL** | `http://localhost:3000` (default) |
+| **Protocol** | HTTP (HTTPS in production) |
+| **Format** | JSON |
+| **Authentication** | JWT via httpOnly Cookie (`token`) |
+| **Security** | Helmet headers, CORS, Arcjet rate limiting |
+| **Validation** | Zod |
 
 ## API Endpoints
 
@@ -35,11 +35,11 @@ GET /health
 }
 ```
 
-| Field       | Type              | Description               |
-| ----------- | ----------------- | ------------------------- |
-| `status`    | string            | Always "OK" when healthy  |
-| `timestamp` | string (ISO 8601) | Current server time       |
-| `uptime`    | number            | Process uptime in seconds |
+| Field | Type | Description |
+|-------|------|-------------|
+| `status` | string | Always "OK" when healthy |
+| `timestamp` | string (ISO 8601) | Current server time |
+| `uptime` | number | Process uptime in seconds |
 
 **Errors**: None (always returns 200 if server is running)
 
@@ -96,7 +96,6 @@ POST /api/auth/sign-up
 **Authentication**: None (self-service registration)
 
 **Request Body**:
-
 ```json
 {
   "name": "John Doe",
@@ -106,12 +105,12 @@ POST /api/auth/sign-up
 }
 ```
 
-| Field      | Type           | Required             | Validation                                       |
-| ---------- | -------------- | -------------------- | ------------------------------------------------ |
-| `name`     | string         | Yes                  | 2-255 characters, trimmed                        |
-| `email`    | string (email) | Yes                  | Valid email format, max 255, lowercased, trimmed |
-| `password` | string         | Yes                  | 6-128 characters                                 |
-| `role`     | string         | No (default: "user") | Must be "user" or "admin"                        |
+| Field | Type | Required | Validation |
+|-------|------|----------|------------|
+| `name` | string | Yes | 2-255 characters, trimmed |
+| `email` | string (email) | Yes | Valid email format, max 255, lowercased, trimmed |
+| `password` | string | Yes | 6-128 characters |
+| `role` | string | No (default: "user") | Must be "user" or "admin" |
 
 **Response**: `201 Created`
 
@@ -134,11 +133,11 @@ POST /api/auth/sign-up
 
 **Errors**:
 
-| Status | Condition             |
-| ------ | --------------------- |
-| `400`  | Validation failed     |
-| `409`  | Email already exists  |
-| `500`  | Internal server error |
+| Status | Condition |
+|--------|-----------|
+| `400` | Validation failed |
+| `409` | Email already exists |
+| `500` | Internal server error |
 
 ---
 
@@ -153,7 +152,6 @@ POST /api/auth/sign-in
 **Authentication**: None (self-service sign-in)
 
 **Request Body**:
-
 ```json
 {
   "email": "john@example.com",
@@ -161,10 +159,10 @@ POST /api/auth/sign-in
 }
 ```
 
-| Field      | Type           | Required | Validation                       |
-| ---------- | -------------- | -------- | -------------------------------- |
-| `email`    | string (email) | Yes      | Valid email, lowercased, trimmed |
-| `password` | string         | Yes      | Min 1 character                  |
+| Field | Type | Required | Validation |
+|-------|------|----------|------------|
+| `email` | string (email) | Yes | Valid email, lowercased, trimmed |
+| `password` | string | Yes | Min 1 character |
 
 **Response**: `200 OK`
 
@@ -184,10 +182,10 @@ POST /api/auth/sign-in
 
 **Errors**:
 
-| Status | Condition                                                          |
-| ------ | ------------------------------------------------------------------ |
-| `400`  | Validation failed                                                  |
-| `401`  | Invalid credentials (ambiguous — same for wrong email or password) |
+| Status | Condition |
+|--------|-----------|
+| `400` | Validation failed |
+| `401` | Invalid credentials (ambiguous — same for wrong email or password) |
 
 ---
 
@@ -248,10 +246,10 @@ GET /api/users
 
 **Errors**:
 
-| Status | Condition                 |
-| ------ | ------------------------- |
-| `401`  | No token or invalid token |
-| `500`  | Internal server error     |
+| Status | Condition |
+|--------|-----------|
+| `401` | No token or invalid token |
+| `500` | Internal server error |
 
 ---
 
@@ -288,11 +286,11 @@ GET /api/users/:id
 
 **Errors**:
 
-| Status | Condition                 |
-| ------ | ------------------------- |
-| `400`  | Invalid ID format         |
-| `401`  | No token or invalid token |
-| `404`  | User not found            |
+| Status | Condition |
+|--------|-----------|
+| `400` | Invalid ID format |
+| `401` | No token or invalid token |
+| `404` | User not found |
 
 ---
 
@@ -307,14 +305,12 @@ PUT /api/users/:id
 **Authentication**: Required
 
 **Authorization**:
-
 - Users can update their own profile only
 - Admins can update any profile
 - Non-admin users cannot change roles
 - Self-role field is stripped for non-admins
 
 **Request Body** (all fields optional, at least one required):
-
 ```json
 {
   "name": "Jane Doe",
@@ -322,11 +318,11 @@ PUT /api/users/:id
 }
 ```
 
-| Field   | Type                | Required | Validation                                |
-| ------- | ------------------- | -------- | ----------------------------------------- |
-| `name`  | string              | No       | 2-255 chars, trimmed                      |
-| `email` | string (email)      | No       | Valid email, max 255, lowercased, trimmed |
-| `role`  | string (admin only) | No       | Must be "user" or "admin"                 |
+| Field | Type | Required | Validation |
+|-------|------|----------|------------|
+| `name` | string | No | 2-255 chars, trimmed |
+| `email` | string (email) | No | Valid email, max 255, lowercased, trimmed |
+| `role` | string (admin only) | No | Must be "user" or "admin" |
 
 **Response**: `200 OK`
 
@@ -346,13 +342,13 @@ PUT /api/users/:id
 
 **Errors**:
 
-| Status | Condition                                            |
-| ------ | ---------------------------------------------------- |
-| `400`  | Validation failed                                    |
-| `401`  | No token or invalid token                            |
-| `403`  | Not authorized (updating another user without admin) |
-| `404`  | User not found                                       |
-| `409`  | Email already exists                                 |
+| Status | Condition |
+|--------|-----------|
+| `400` | Validation failed |
+| `401` | No token or invalid token |
+| `403` | Not authorized (updating another user without admin) |
+| `404` | User not found |
+| `409` | Email already exists |
 
 ---
 
@@ -386,12 +382,12 @@ DELETE /api/users/:id
 
 **Errors**:
 
-| Status | Condition                            |
-| ------ | ------------------------------------ |
-| `400`  | Invalid ID format                    |
-| `401`  | No token or invalid token            |
-| `403`  | Not admin, or attempting self-delete |
-| `404`  | User not found                       |
+| Status | Condition |
+|--------|-----------|
+| `400` | Invalid ID format |
+| `401` | No token or invalid token |
+| `403` | Not admin, or attempting self-delete |
+| `404` | User not found |
 
 ---
 
@@ -407,24 +403,24 @@ graph TB
         Sin["POST /api/auth/sign-in"]
         Sout["POST /api/auth/sign-out"]
     end
-
+    
     subgraph "Protected Endpoints (Auth Required)"
         LU["GET /api/users"]
         GU["GET /api/users/:id"]
         UU["PUT /api/users/:id"]
         DU["DELETE /api/users/:id"]
     end
-
+    
     subgraph "Auth Middleware"
         AM["authenticateToken"]
     end
-
+    
     subgraph "Admin Only"
         RO["requireRole(['admin'])"]
     end
-
+    
     H & R & S & Reg & Sin & Sout --> NoAuth[No Authentication]
-
+    
     LU & GU & UU --> AM
     AM --> LU
     AM --> GU
@@ -446,7 +442,6 @@ All error responses follow this structure:
 ```
 
 ### Validation Error Details
-
 ```json
 {
   "error": "Validation failed",
@@ -456,8 +451,8 @@ All error responses follow this structure:
 
 ## Source Files Evidence
 
-| API         | Route File                   | Controller                            | Validation                            |
-| ----------- | ---------------------------- | ------------------------------------- | ------------------------------------- |
-| Health/Root | `src/app.js`                 | Inline                                | None                                  |
-| Auth        | `src/routes/auth.routes.js`  | `src/controllers/auth.controller.js`  | `src/validations/auth.validation.js`  |
-| Users       | `src/routes/users.routes.js` | `src/controllers/users.controller.js` | `src/validations/users.validation.js` |
+| API | Route File | Controller | Validation |
+|-----|-----------|------------|------------|
+| Health/Root | `src/app.js` | Inline | None |
+| Auth | `src/routes/auth.routes.js` | `src/controllers/auth.controller.js` | `src/validations/auth.validation.js` |
+| Users | `src/routes/users.routes.js` | `src/controllers/users.controller.js` | `src/validations/users.validation.js` |

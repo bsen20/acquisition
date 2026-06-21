@@ -21,12 +21,12 @@
 
 ## Who Uses It
 
-| Role                 | Usage                                            |
-| -------------------- | ------------------------------------------------ |
-| **Developers**       | Learning modern Node.js/Express backend patterns |
-| **Students**         | Following JavaScript Mastery tutorials           |
-| **Startup Teams**    | Using as a foundation for their own backend      |
-| **DevOps Engineers** | Studying Docker/CI-CD configurations             |
+| Role | Usage |
+|------|-------|
+| **Developers** | Learning modern Node.js/Express backend patterns |
+| **Students** | Following JavaScript Mastery tutorials |
+| **Startup Teams** | Using as a foundation for their own backend |
+| **DevOps Engineers** | Studying Docker/CI-CD configurations |
 
 ## Business Problem Solved
 
@@ -62,7 +62,7 @@ graph TB
     Users[User Routes /api/users]
     Arcjet[Arcjet Security Middleware]
     DB[(Neon PostgreSQL)]
-
+    
     Client --> API
     API --> Arcjet
     Arcjet --> Auth
@@ -76,29 +76,29 @@ graph TB
 
 ## Technical Summary
 
-| Aspect         | Detail                                              |
-| -------------- | --------------------------------------------------- |
-| **Language**   | JavaScript (ES Modules)                             |
-| **Runtime**    | Node.js (version: 18+, tested on 20.x in CI)        |
-| **Framework**  | Express 5                                           |
-| **Database**   | Neon Serverless PostgreSQL                          |
-| **ORM**        | Drizzle ORM                                         |
-| **Auth**       | JWT (jsonwebtoken) via httpOnly cookies             |
-| **Validation** | Zod                                                 |
-| **Security**   | Arcjet (rate limit, bot detection, shield) + Helmet |
-| **Logging**    | Winston                                             |
-| **Container**  | Docker (multi-stage builds)                         |
-| **CI/CD**      | GitHub Actions                                      |
-| **Port**       | 3000 (default)                                      |
+| Aspect | Detail |
+|--------|--------|
+| **Language** | JavaScript (ES Modules) |
+| **Runtime** | Node.js (version: 18+, tested on 20.x in CI) |
+| **Framework** | Express 5 |
+| **Database** | Neon Serverless PostgreSQL |
+| **ORM** | Drizzle ORM |
+| **Auth** | JWT (jsonwebtoken) via httpOnly cookies |
+| **Validation** | Zod |
+| **Security** | Arcjet (rate limit, bot detection, shield) + Helmet |
+| **Logging** | Winston |
+| **Container** | Docker (multi-stage builds) |
+| **CI/CD** | GitHub Actions |
+| **Port** | 3000 (default) |
 
 ## Source Files Evidence
 
-| Conclusion             | Source                                                                            |
-| ---------------------- | --------------------------------------------------------------------------------- |
-| Express 5 usage        | `src/app.js` — `import express from 'express'`                                    |
-| JWT auth flow          | `src/middleware/auth.middleware.js`                                               |
-| Database configuration | `src/config/database.js`                                                          |
-| Arcjet security        | `src/config/arcjet.js`, `src/middleware/security.middleware.js`                   |
-| Docker multi-stage     | `Dockerfile` — `FROM base AS development` / `FROM base AS production`             |
-| CI/CD pipelines        | `.github/workflows/tests.yml`, `docker-build-and-push.yml`, `lint-and-format.yml` |
-| Zod validation         | `src/validations/auth.validation.js`, `src/validations/users.validation.js`       |
+| Conclusion | Source |
+|-----------|--------|
+| Express 5 usage | `src/app.js` — `import express from 'express'` |
+| JWT auth flow | `src/middleware/auth.middleware.js` |
+| Database configuration | `src/config/database.js` |
+| Arcjet security | `src/config/arcjet.js`, `src/middleware/security.middleware.js` |
+| Docker multi-stage | `Dockerfile` — `FROM base AS development` / `FROM base AS production` |
+| CI/CD pipelines | `.github/workflows/tests.yml`, `docker-build-and-push.yml`, `lint-and-format.yml` |
+| Zod validation | `src/validations/auth.validation.js`, `src/validations/users.validation.js` |

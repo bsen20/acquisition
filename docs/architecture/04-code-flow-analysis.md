@@ -11,17 +11,17 @@ sequenceDiagram
     participant Config as Config Modules
     participant Routes as Route Modules
     participant Middleware as Middleware Modules
-
+    
     Shell->>Index: node src/index.js
-
+    
     Index->>Index: import 'dotenv/config'
     Index->>Index: import './server.js'
-
+    
     Server->>App: import app from './app.js'
-
+    
     App->>Config: import logger
     App->>Config: import securityMiddleware
-
+    
     App->>App: Initialize Express app
     App->>App: app.use(helmet())
     App->>App: app.use(cors())
@@ -30,24 +30,23 @@ sequenceDiagram
     App->>App: app.use(cookieParser())
     App->>App: app.use(morgan('combined', ...))
     App->>App: app.use(securityMiddleware)
-
+    
     App->>Routes: import authRoutes
     App->>Routes: import usersRoutes
-
+    
     App->>App: app.get('/', ...)
     App->>App: app.get('/health', ...)
     App->>App: app.get('/api', ...)
     App->>App: app.use('/api/auth', authRoutes)
     App->>App: app.use('/api/users', usersRoutes)
     App->>App: app.use(404 handler)
-
+    
     App-->>Server: export app
     Server->>Server: app.listen(PORT)
     Server-->>Shell: Server started on PORT
 ```
 
 **Startup Steps**:
-
 1. `npm start` or `npm run dev` executes `src/index.js`
 2. `dotenv/config` loads environment variables from `.env`
 3. `server.js` imports `app.js` (this triggers all module imports and Express configuration)
@@ -75,86 +74,86 @@ sequenceDiagram
     participant Service
     participant Drizzle as Drizzle ORM
     participant DB as Neon PostgreSQL
-
+    
     Client->>Express: HTTP Request
-
+    
     Express->>Helmet: Set security headers
     Helmet-->>Express: Headers added
-
+    
     Express->>CORS: Check origin
     CORS-->>Express: Allow/Deny
-
+    
     Express->>Parser: Parse JSON body
     Parser-->>Express: req.body
-
+    
     Express->>CP: Parse cookies
     CP-->>Express: req.cookies
-
+    
     Express->>Morgan: Log request
     Morgan->>Winston: Write log
     Winston-->>Morgan: Logged
-
+    
     Express->>Arcjet: protect(req)
-
+    
     Arcjet->>Arcjet: Check bot
     Arcjet->>Arcjet: Check shield rules
     Arcjet->>Arcjet: Check rate limits
-
+    
     alt Blocked by Arcjet
         Arcjet-->>Express: 403 Forbidden
         Express-->>Client: Error Response
     else Passed
         Arcjet-->>Express: Allow
     end
-
+    
     Express->>Express: Route matching
-
+    
     alt Auth Route
         Express->>Controller: auth.controller
-
+        
         Controller->>Zod: Validate body
         alt Invalid
             Controller-->>Express: 400
             Express-->>Client: Validation Error
         end
-
+        
         Controller->>Service: auth.service
-
+        
         Service->>Service: hash/compare password
         Service->>Drizzle: Query users table
         Drizzle->>DB: SQL Query
         DB-->>Drizzle: Results
         Drizzle-->>Service: Data
-
+        
         alt Duplicate / Not found
             Service-->>Controller: Error
             Controller-->>Express: 409/401
         end
-
+        
         Service-->>Controller: User data
-
+        
         Controller->>Controller: Generate JWT
         Controller->>Controller: Set cookie
         Controller-->>Express: 200/201
         Express-->>Client: JSON + Cookie
-
+        
     else Protected Route
         Express->>Auth: authenticateToken
-
+        
         Auth->>Auth: Read cookie
         alt No cookie
             Auth-->>Express: 401
             Express-->>Client: Unauthorized
         end
-
+        
         Auth->>Auth: Verify JWT
         alt Invalid/Expired
             Auth-->>Express: 401
             Express-->>Client: Invalid token
         end
-
+        
         Auth->>Auth: req.user = decoded
-
+        
         alt Admin Route (/DELETE)
             Express->>Auth: requireRole(['admin'])
             alt Not admin
@@ -162,29 +161,29 @@ sequenceDiagram
                 Express-->>Client: Forbidden
             end
         end
-
+        
         Express->>Controller: users.controller
-
+        
         Controller->>Zod: Validate params/body
         alt Invalid
             Controller-->>Express: 400
         end
-
+        
         Controller->>Service: users.service
         Service->>Drizzle: Query
         Drizzle->>DB: SQL
         DB-->>Drizzle: Results
         Drizzle-->>Service: Data
         Service-->>Controller: Result
-
+        
         Controller->>Controller: Check authorization
         alt Unauthorized action
             Controller-->>Express: 403
         end
-
+        
         Controller-->>Express: 200 JSON
         Express-->>Client: Response
-
+        
     else Health/Root
         Express-->>Client: OK Response
     end
@@ -198,7 +197,7 @@ sequenceDiagram
     participant Cookie as Cookie Utils
     participant JWT as JWT Utils
     participant AuthMW as Auth Middleware
-
+    
     Note over User, AuthMW: === REGISTRATION ===
     User->>API: POST /api/auth/sign-up {name, email, password}
     API->>Service: createUser()
@@ -210,7 +209,7 @@ sequenceDiagram
     JWT-->>API: token
     API->>Cookie: set(res, 'token', token)
     API-->>User: 201 + JSON + httpOnly Cookie
-
+    
     Note over User, AuthMW: === SIGN-IN ===
     User->>API: POST /api/auth/sign-in {email, password}
     API->>Service: authenticateUser()
@@ -221,7 +220,7 @@ sequenceDiagram
     API->>JWT: sign({id, email, role})
     API->>Cookie: set(res, 'token', token)
     API-->>User: 200 + JSON + httpOnly Cookie
-
+    
     Note over User, AuthMW: === PROTECTED REQUEST ===
     User->>API: GET /api/users (Cookie: token=...)
     API->>AuthMW: authenticateToken()
@@ -231,7 +230,7 @@ sequenceDiagram
     AuthMW->>AuthMW: req.user = decoded
     AuthMW-->>API: next()
     API->>API: Process route
-
+    
     Note over User, AuthMW: === SIGN-OUT ===
     User->>API: POST /api/auth/sign-out
     API->>Cookie: clear(res, 'token')
@@ -254,7 +253,7 @@ flowchart TB
     J --> K{req.user.role in allowedRoles?}
     K -->|No| L[403 Insufficient permissions]
     K -->|Yes| I
-
+    
     I --> M[Controller processes request]
     M --> N{Fetch user by ID?}
     N --> O[Zod validates :id is number]
@@ -276,10 +275,10 @@ flowchart TB
 ```mermaid
 flowchart TB
     A[Error occurs] --> B{Error type?}
-
+    
     B -->|Zod Validation Error| C[Controller catches]
     C --> D[Return 400 + formatted errors]
-
+    
     B -->|Business Logic Error| E[Controller catches]
     E --> F[Check error.message]
     F -->|'User with this email...'| G[Return 409]
@@ -287,16 +286,16 @@ flowchart TB
     F -->|'Invalid password'| I[Return 401]
     F -->|'Email already exists'| J[Return 409]
     F -->|Other| K[Call next(error)]
-
+    
     B -->|JWT Error| L[Auth middleware catches]
     L -->|'Failed to authenticate'| M[Return 401]
     L -->|Other| N[Return 500]
-
+    
     B -->|Unexpected Error| K
-
+    
     K --> O[Express default error handler]
     O --> P[500 Internal Server Error]
-
+    
     %% Winston logging at every step
     A -.-> Q[Winston: logger.error()]
 ```
@@ -309,18 +308,18 @@ flowchart LR
         A[Application Code]
         B[Morgan HTTP Logger]
     end
-
+    
     subgraph "Winston Logger"
         C[Logger Instance]
         D[Format: JSON + Timestamp + Errors Stack + Service Name]
     end
-
+    
     subgraph "Transports"
         E[File: logs/combined.log<br/>All levels]
         F[File: logs/error.lg<br/>Error level only]
         G[Console<br/>(Non-production only)<br/>Colorized + Simple format]
     end
-
+    
     A --> C
     B --> C
     C --> D
@@ -330,7 +329,6 @@ flowchart LR
 ```
 
 **Log Levels Used** (from source analysis of `logs/combined.log` and `logs/error.lg`):
-
 - `logger.info()` — User registrations, sign-ins, sign-outs, successful operations
 - `logger.error()` — Failed operations, exceptions, auth failures
 - `logger.warn()` — Rate limit exceeded, bot blocked, authorization denied
@@ -342,7 +340,6 @@ flowchart LR
 ## Event Processing Flow
 
 **Not enough evidence found in repository.** The project does not implement any event-driven patterns. There are no:
-
 - Event emitters
 - Message queues
 - Webhook deliveries
@@ -350,11 +347,11 @@ flowchart LR
 
 ## Source Files Evidence
 
-| Flow              | Key Files                                                                                          |
-| ----------------- | -------------------------------------------------------------------------------------------------- |
-| Startup           | `src/index.js:1-2`, `src/server.js:1-6`, `src/app.js:1-52`                                         |
-| Request Lifecycle | `src/app.js` (middleware order), `src/middleware/security.middleware.js`                           |
-| Authentication    | `src/middleware/auth.middleware.js`, `src/utils/jwt.js:1-18`, `src/utils/cookies.js`               |
-| Authorization     | `src/middleware/auth.middleware.js:17-28`, `src/controllers/users.controller.js:32-64`             |
-| Error Handling    | `src/controllers/auth.controller.js`, `src/controllers/users.controller.js` (all try-catch blocks) |
-| Logging           | `src/config/logger.js`, `src/app.js:21-24` (morgan integration)                                    |
+| Flow | Key Files |
+|------|-----------|
+| Startup | `src/index.js:1-2`, `src/server.js:1-6`, `src/app.js:1-52` |
+| Request Lifecycle | `src/app.js` (middleware order), `src/middleware/security.middleware.js` |
+| Authentication | `src/middleware/auth.middleware.js`, `src/utils/jwt.js:1-18`, `src/utils/cookies.js` |
+| Authorization | `src/middleware/auth.middleware.js:17-28`, `src/controllers/users.controller.js:32-64` |
+| Error Handling | `src/controllers/auth.controller.js`, `src/controllers/users.controller.js` (all try-catch blocks) |
+| Logging | `src/config/logger.js`, `src/app.js:21-24` (morgan integration) |

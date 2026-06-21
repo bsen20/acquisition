@@ -9,17 +9,17 @@ graph TB
         GitHub[GitHub Actions CI/CD]
         DockerHub[Docker Hub Registry]
     end
-
+    
     subgraph "Application Container"
         API[Express API Server]
         Arcjet[Arcjet Security Layer]
-
+        
         subgraph "Routes"
             AuthRoutes[Auth Routes<br/>/api/auth]
             UserRoutes[User Routes<br/>/api/users]
             HealthRoute[Health<br/>/health]
         end
-
+        
         subgraph "Middleware Stack"
             Helmet[Helmet Security Headers]
             CORS[CORS]
@@ -28,27 +28,27 @@ graph TB
             Security[Arcjet Security Middleware]
             Auth[JWT Auth Middleware]
         end
-
+        
         subgraph "Business Logic"
             AuthService[Auth Service]
             UserService[User Service]
             Validators[Zod Validators]
         end
-
+        
         subgraph "Data Access"
             Drizzle[Drizzle ORM]
         end
     end
-
+    
     subgraph "Data Layer"
         NeonDB[(Neon Serverless PostgreSQL)]
     end
-
+    
     subgraph "Observability"
         WinstonLogger[Winston Logger]
         Files[Log Files]
     end
-
+    
     Client --> API
     API --> Helmet
     Helmet --> CORS
@@ -57,20 +57,20 @@ graph TB
     Morgan --> Security
     Security --> AuthRoutes
     Security --> UserRoutes
-
+    
     AuthRoutes --> AuthService
     UserRoutes --> Auth
     Auth --> UserService
-
+    
     AuthService --> Validators
     UserService --> Validators
-
+    
     AuthService --> Drizzle
     UserService --> Drizzle
     Drizzle --> NeonDB
-
+    
     WinstonLogger --> Files
-
+    
     GitHub --> DockerHub
     DockerHub -.-> Client
 ```
@@ -85,7 +85,7 @@ graph TB
         direction TB
         MW[Middleware Pipeline]
         RT[Router]
-
+        
         subgraph "Middleware"
             H[helmet]
             C[cors]
@@ -95,19 +95,19 @@ graph TB
             M[morgan → winston]
             SM[security.middleware]
         end
-
+        
         subgraph "Routes"
             AR[auth.routes]
             UR[users.routes]
             HR[health / root]
         end
-
+        
         MW --> RT
         RT --> HR
         RT --> AR
         RT --> UR
     end
-
+    
     subgraph "Auth Module"
         AC[auth.controller]
         AS[auth.service]
@@ -115,39 +115,39 @@ graph TB
         JWT[jwt.utils]
         CK[cookies.utils]
     end
-
+    
     subgraph "User Module"
         UC[users.controller]
         US[users.service]
         UV[users.validation]
         UM[user.model]
     end
-
+    
     subgraph "Infrastructure"
         DB[database.config]
         LG[logger.config]
         AJ[arcjet.config]
     end
-
+    
     AR --> AC
     UR --> UC
-
+    
     AC --> AV
     AC --> AS
     AC --> JWT
     AC --> CK
-
+    
     UC --> UV
     UC --> US
-
+    
     AS --> DB
     AS --> LG
     US --> DB
     US --> LG
-
+    
     US --> UM
     AS --> UM
-
+    
     SM --> AJ
     SM --> LG
 ```
@@ -166,11 +166,11 @@ sequenceDiagram
     participant Service
     participant ORM as Drizzle ORM
     participant DB as Neon DB
-
+    
     Client->>Router: HTTP Request
     Router->>Security: Arcjet protect()
     Security-->>Router: Pass / Deny
-
+    
     alt Public Route (auth)
         Router->>Controller: Auth Controller
     else Protected Route (users)
@@ -179,12 +179,12 @@ sequenceDiagram
         Router->>AuthMW: requireRole() [if needed]
         Router->>Controller: Users Controller
     end
-
+    
     Controller->>Controller: Zod validation
     alt Validation Fails
         Controller-->>Client: 400 Error
     end
-
+    
     Controller->>Service: Business logic
     Service->>ORM: Query
     ORM->>DB: SQL
@@ -213,7 +213,7 @@ graph LR
         cors["cors ^2.8.5"]
         dotenv["dotenv ^17.2.2"]
     end
-
+    
     subgraph "Dev Dependencies"
         eslint["eslint ^9.35.0"]
         prettier["prettier ^3.6.2"]
@@ -221,7 +221,7 @@ graph LR
         supertest["supertest ^7.1.4"]
         drizzle_kit["drizzle-kit ^0.31.4"]
     end
-
+    
     app[Application] --> express
     app --> arcjet
     app --> neon
@@ -235,7 +235,7 @@ graph LR
     app --> cookie
     app --> cors
     app --> dotenv
-
+    
     dev[Developer Tools] --> eslint
     dev --> prettier
     dev --> jest
@@ -257,7 +257,7 @@ flowchart TB
     F --> G[Parse cookies]
     G --> H[Log via Morgan → Winston]
     H --> I[Arcjet Security Check]
-
+    
     I --> J{Bot?}
     J -->|Yes| K[403 Blocked]
     J -->|No| L{Shield?}
@@ -265,17 +265,17 @@ flowchart TB
     L -->|No| N{Rate Limited?}
     N -->|Yes| O[403 Blocked]
     N -->|No| P{Route Matches?}
-
+    
     P -->|/api/auth/*| Q[Auth Controller]
     P -->|/api/users/*| R{Auth Middleware}
     P -->|/health| S[Health Response]
     P -->|/| T[Root Response]
     P -->|No Match| U[404 Not Found]
-
+    
     R -->|Valid Token| V[Users Controller]
     R -->|No Token| W[401 Unauthorized]
     R -->|Expired| X[401 Unauthorized]
-
+    
     Q --> Y[JSON Response]
     V --> Y
     S --> Y
@@ -296,31 +296,31 @@ graph TB
         DevCompose["docker-compose.dev.yml"]
         NeonLocal["Neon Local Proxy :5432"]
         DevApp["App Container (dev target)<br/>Hot Reload :3000"]
-
+        
         DevCompose --> NeonLocal
         DevCompose --> DevApp
         DevApp --> NeonLocal
     end
-
+    
     subgraph "Production Environment"
         ProdCompose["docker-compose.prod.yml"]
         ProdApp["App Container (prod target)<br/>:3000"]
         NeonCloud["Neon Cloud DB"]
-
+        
         ProdCompose --> ProdApp
         ProdApp --> NeonCloud
     end
-
+    
     subgraph "CI/CD (GitHub Actions)"
         Lint["Lint & Format Workflow"]
         Test["Test Workflow"]
         DockerBuild["Docker Build & Push"]
-
+        
         Lint --> Test
         Test --> DockerBuild
         DockerBuild --> DockerHub["Docker Hub Registry"]
     end
-
+    
     DockerHub -.-> DevApp
     DockerHub -.-> ProdApp
 ```
@@ -333,26 +333,26 @@ graph TB
         Docker[Docker Engine]
         Docker --> Dev
         Docker --> Prod
-
+        
         subgraph "Dev Stack"
             DApp[App Container<br/>Node 18 Alpine<br/>:3000]
             DNeon[Neon Local<br/>PostgreSQL<br/>:5432]
             DVolume[Volume: .:/app<br/>Volume: /app/node_modules<br/>Volume: ./logs:/app/logs]
         end
-
+        
         subgraph "Prod Stack"
             PApp[App Container<br/>Node 18 Alpine<br/>:3000<br/>CPU: 0.5 limit<br/>Memory: 512M limit]
             PVolume[Volume: ./logs:/app/logs]
         end
     end
-
+    
     subgraph "External Services"
         GH[GitHub Actions]
         DH[Docker Hub]
         NC[Neon Cloud<br/>(Serverless PostgreSQL)]
         AJ[Arcjet Cloud<br/>(Security)]
     end
-
+    
     Dev --> GH
     GH --> DH
     DH --> PApp
@@ -368,11 +368,11 @@ graph TB
 
 ## Source Files Evidence
 
-| Diagram                 | Supporting Files                                                   |
-| ----------------------- | ------------------------------------------------------------------ |
-| High Level Architecture | `src/app.js`, `src/server.js`                                      |
-| Component Diagram       | All files in `src/`                                                |
-| Module Interaction      | `src/controllers/*`, `src/services/*`                              |
-| Dependency Diagram      | `package.json`                                                     |
-| Deployment Architecture | `Dockerfile`, `docker-compose.dev.yml`, `docker-compose.prod.yml`  |
-| Infrastructure          | `Dockerfile`, `.dockerignore`, `scripts/dev.sh`, `scripts/prod.sh` |
+| Diagram | Supporting Files |
+|---------|------------------|
+| High Level Architecture | `src/app.js`, `src/server.js` |
+| Component Diagram | All files in `src/` |
+| Module Interaction | `src/controllers/*`, `src/services/*` |
+| Dependency Diagram | `package.json` |
+| Deployment Architecture | `Dockerfile`, `docker-compose.dev.yml`, `docker-compose.prod.yml` |
+| Infrastructure | `Dockerfile`, `.dockerignore`, `scripts/dev.sh`, `scripts/prod.sh` |

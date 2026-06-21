@@ -41,11 +41,11 @@
 
 ## Impact Statements
 
-| Statement                                                                                            | Evidence                                                             |
-| ---------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------- |
-| "Reduced authentication implementation time from 2-3 weeks to zero for teams using this starter kit" | Reference architecture with ready-to-use auth endpoints              |
-| "Eliminated XSS token theft vulnerability by implementing httpOnly JWT cookies"                      | `src/utils/cookies.js:3` — httpOnly: true                            |
-| "Prevented brute force and bot attacks through Arcjet rate limiting and bot detection"               | `src/middleware/security.middleware.js` — role-based rate limiting   |
-| "Achieved consistent dev/prod parity through Docker multi-stage builds"                              | `Dockerfile` — base/dev/prod stages                                  |
-| "Enabled multi-architecture deployment (amd64 + arm64) through CI/CD pipeline design"                | `.github/workflows/docker-build-and-push.yml` — multi-platform build |
-| "Reduced database connection overhead by integrating serverless PostgreSQL with connection pooling"  | `src/config/database.js` — Neon pooler URL                           |
+| Statement | Evidence |
+|-----------|----------|
+| "Reduced authentication implementation time from 2-3 weeks to zero for teams using this starter kit" | Reference architecture with ready-to-use auth endpoints |
+| "Eliminated XSS token theft vulnerability by implementing httpOnly JWT cookies" | `src/utils/cookies.js:3` — httpOnly: true |
+| "Prevented brute force and bot attacks through Arcjet rate limiting and bot detection" | `src/middleware/security.middleware.js` — role-based rate limiting |
+| "Achieved consistent dev/prod parity through Docker multi-stage builds" | `Dockerfile` — base/dev/prod stages |
+| "Enabled multi-architecture deployment (amd64 + arm64) through CI/CD pipeline design" | `.github/workflows/docker-build-and-push.yml` — multi-platform build |
+| "Reduced database connection overhead by integrating serverless PostgreSQL with connection pooling" | `src/config/database.js` — Neon pooler URL |
