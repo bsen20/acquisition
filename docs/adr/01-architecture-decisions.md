@@ -7,6 +7,7 @@
 **Context**: Choosing a web framework for the REST API backend.
 
 **Benefits**:
+
 - Largest ecosystem and community in Node.js
 - Massive middleware library (Helmet, CORS, Morgan, etc.)
 - Simple, unopinionated API
@@ -14,6 +15,7 @@
 - Team familiarity (JavaScript Mastery community)
 
 **Drawbacks**:
+
 - Less performant than Fastify (though sufficient for this scale)
 - Less structured than NestJS (no built-in DI, modules, guards)
 - Callback-based error handling can be verbose
@@ -36,6 +38,7 @@
 **Context**: Choosing a database provider with serverless capabilities.
 
 **Benefits**:
+
 - Database branching for development/testing
 - Serverless scaling (pay-per-use, auto-scaling)
 - Full PostgreSQL compatibility
@@ -43,6 +46,7 @@
 - Ephemeral database branches in CI/CD
 
 **Drawbacks**:
+
 - Cold starts (1-5 seconds on first query)
 - Network latency compared to local database
 - Vendor lock-in (Neon-specific features)
@@ -67,6 +71,7 @@
 **Context**: Choosing an ORM for PostgreSQL interaction.
 
 **Benefits**:
+
 - Lightweight, no code generation
 - SQL-like API (thin abstraction over SQL)
 - Fast Drizzle Kit for migrations
@@ -74,6 +79,7 @@
 - Serverless-friendly (works with @neondatabase/serverless)
 
 **Drawbacks**:
+
 - Smaller community than Prisma
 - Less mature (fewer tutorials, examples)
 - Manual migration management (no schema push like Prisma)
@@ -97,6 +103,7 @@
 **Context**: Need to protect the API from abuse, bots, and common attacks.
 
 **Benefits**:
+
 - Single integration for multiple security features
 - Cloud-managed rule updates
 - Role-aware rate limiting
@@ -104,6 +111,7 @@
 - Shield protection against common web attacks
 
 **Drawbacks**:
+
 - External API dependency (adds latency)
 - Beta software (v1.0.0-beta.11)
 - Cost at scale (free tier may not suffice)
@@ -128,6 +136,7 @@
 **Context**: Need a stateless authentication mechanism.
 
 **Benefits**:
+
 - No server-side session storage (stateless)
 - Compact token format (URL-safe)
 - Can include user claims (id, email, role)
@@ -135,6 +144,7 @@
 - Works well with API clients (not just browsers)
 
 **Drawbacks**:
+
 - Cannot revoke tokens server-side (until expiry)
 - Token size grows with claims
 - Secret management is critical
@@ -159,12 +169,14 @@
 **Context**: Choosing where to store the JWT token on the client.
 
 **Benefits**:
+
 - httpOnly prevents XSS token theft
 - SameSite=Strict prevents CSRF
 - Cookie is automatically sent by browser
 - No client-side JavaScript token management needed
 
 **Drawbacks**:
+
 - Only works for browser clients (mobile apps need header-based auth)
 - Limited to same-origin or specific cross-origin config
 - Cookie size limits
@@ -187,12 +199,14 @@
 **Context**: Need optimized Docker images for different environments.
 
 **Benefits**:
+
 - Production image excludes dev dependencies
 - Smaller attack surface (no dev tools in prod)
 - Smaller image size (faster pulls, lower storage)
 - Shared base layer reduces build time
 
 **Drawbacks**:
+
 - Complex Dockerfile
 - Longer initial build time
 - Requires understanding of Docker stages
@@ -215,6 +229,7 @@
 **Context**: Choosing module system for the project.
 
 **Benefits**:
+
 - Clean import paths via `#` aliases
 - No relative path hell
 - Static analysis for tree-shaking
@@ -222,6 +237,7 @@
 - Top-level await support
 
 **Drawbacks**:
+
 - Some packages still use CommonJS (interop required)
 - Requires `"type": "module"` in package.json
 - Import maps are Node.js-specific
@@ -244,6 +260,7 @@
 **Context**: Choosing a validation library.
 
 **Benefits**:
+
 - TypeScript-compatible schema definitions
 - Composable schemas (`.extend()`, `.merge()`)
 - Built-in parsing and transformation
@@ -251,6 +268,7 @@
 - Active development (v4)
 
 **Drawbacks**:
+
 - Zod v4 API differs from v3 (potential migration effort)
 - Smaller ecosystem than Joi
 
@@ -272,6 +290,7 @@
 **Context**: Choosing a CI/CD platform.
 
 **Benefits**:
+
 - Integrated with GitHub repository
 - Free for public repositories
 - Large marketplace of actions
@@ -279,6 +298,7 @@
 - Secrets management
 
 **Drawbacks**:
+
 - Tied to GitHub (migration requires workflow rewrite)
 - Windows/macOS runners slower than Linux
 - Limited customization vs Jenkins

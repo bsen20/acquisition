@@ -9,13 +9,13 @@ graph TB
         Integration[Integration Tests: 3 tests]
         Unit[Unit Tests: None]
     end
-    
+
     subgraph "Current Coverage"
         IC1["GET /health status check"]
         IC2["GET /api message check"]
         IC3["GET /nonexistent 404 check"]
     end
-    
+
     Integration --> IC1
     Integration --> IC2
     Integration --> IC3
@@ -42,7 +42,10 @@ describe('API Endpoints', () => {
   describe('GET /api', () => {
     it('should return API message', async () => {
       const response = await request(app).get('/api').expect(200);
-      expect(response.body).toHaveProperty('message', 'Acquisitions API is running!');
+      expect(response.body).toHaveProperty(
+        'message',
+        'Acquisitions API is running!'
+      );
     });
   });
 
@@ -57,14 +60,14 @@ describe('API Endpoints', () => {
 
 ### Test Configuration
 
-| Property | Value |
-|----------|-------|
-| **Test Runner** | Jest 30 |
-| **HTTP Testing** | Supertest 7 |
-| **Module System** | ESM (`--experimental-vm-modules`) |
-| **Coverage** | V8 provider, collected automatically |
-| **Coverage Dir** | `./coverage/` |
-| **Coverage Reports** | HTML, LCOV, Clover, JSON |
+| Property             | Value                                |
+| -------------------- | ------------------------------------ |
+| **Test Runner**      | Jest 30                              |
+| **HTTP Testing**     | Supertest 7                          |
+| **Module System**    | ESM (`--experimental-vm-modules`)    |
+| **Coverage**         | V8 provider, collected automatically |
+| **Coverage Dir**     | `./coverage/`                        |
+| **Coverage Reports** | HTML, LCOV, Clover, JSON             |
 
 **Jest Command**: `NODE_OPTIONS=--experimental-vm-modules jest`
 
@@ -74,12 +77,13 @@ describe('API Endpoints', () => {
 
 Based on the LCOV report in `coverage/lcov.info`:
 
-| File | Lines Covered | Coverage |
-|------|--------------|----------|
-| `src/app.js` | Health, root, API, 404 routes | ~60% |
-| Rest of files | 0 lines covered | **0%** |
+| File          | Lines Covered                 | Coverage |
+| ------------- | ----------------------------- | -------- |
+| `src/app.js`  | Health, root, API, 404 routes | ~60%     |
+| Rest of files | 0 lines covered               | **0%**   |
 
 **Key uncovered areas**:
+
 - All authentication logic (signup, signin, signout) — 0%
 - All user CRUD operations — 0%
 - All middleware (auth, security) — 0%
@@ -90,29 +94,30 @@ Based on the LCOV report in `coverage/lcov.info`:
 
 ### Test Gaps (Critical)
 
-| Area | Missing Tests | Risk |
-|------|--------------|------|
-| Auth flows | Signup success, duplicate email, signin success, wrong password, signout | HIGH |
-| User CRUD | Get users, get by ID, update (self), update (others), delete (admin), delete (self) | HIGH |
-| Auth middleware | No token, invalid token, expired token, role check | HIGH |
-| Security middleware | Rate limit, bot detection | MEDIUM |
-| Input validation | Invalid inputs for all schemas | MEDIUM |
-| Error paths | Database down, unexpected errors | MEDIUM |
+| Area                | Missing Tests                                                                       | Risk   |
+| ------------------- | ----------------------------------------------------------------------------------- | ------ |
+| Auth flows          | Signup success, duplicate email, signin success, wrong password, signout            | HIGH   |
+| User CRUD           | Get users, get by ID, update (self), update (others), delete (admin), delete (self) | HIGH   |
+| Auth middleware     | No token, invalid token, expired token, role check                                  | HIGH   |
+| Security middleware | Rate limit, bot detection                                                           | MEDIUM |
+| Input validation    | Invalid inputs for all schemas                                                      | MEDIUM |
+| Error paths         | Database down, unexpected errors                                                    | MEDIUM |
 
 ## Coverage Quality Assessment
 
-| Criteria | Score (1-5) | Notes |
-|----------|-------------|-------|
-| **Coverage Breadth** | 1/5 | Only 3 basic endpoint tests |
-| **Coverage Depth** | 1/5 | No edge cases tested |
-| **Integration Tests** | 2/5 | Good setup with supertest, but insufficient |
-| **Unit Tests** | 1/5 | No isolated service/utility tests |
-| **E2E Tests** | 1/5 | None |
-| **Mocking** | 1/5 | No mocks for DB, Arcjet |
+| Criteria              | Score (1-5) | Notes                                       |
+| --------------------- | ----------- | ------------------------------------------- |
+| **Coverage Breadth**  | 1/5         | Only 3 basic endpoint tests                 |
+| **Coverage Depth**    | 1/5         | No edge cases tested                        |
+| **Integration Tests** | 2/5         | Good setup with supertest, but insufficient |
+| **Unit Tests**        | 1/5         | No isolated service/utility tests           |
+| **E2E Tests**         | 1/5         | None                                        |
+| **Mocking**           | 1/5         | No mocks for DB, Arcjet                     |
 
 ## Recommendations for Test Expansion
 
 ### Priority 1: Auth Integration Tests
+
 ```javascript
 describe('Auth Endpoints', () => {
   it('should register a new user - POST /api/auth/sign-up');
@@ -125,6 +130,7 @@ describe('Auth Endpoints', () => {
 ```
 
 ### Priority 2: User CRUD Integration Tests
+
 ```javascript
 describe('User Endpoints', () => {
   describe('GET /api/users', () => {
@@ -151,6 +157,7 @@ describe('User Endpoints', () => {
 ```
 
 ### Priority 3: Unit Tests
+
 ```javascript
 describe('JWT Utils', () => {
   it('should sign and verify a valid token');
@@ -173,6 +180,7 @@ describe('Auth Service', () => {
 ```
 
 ### Priority 4: Security Tests
+
 ```javascript
 describe('Security Middleware', () => {
   it('should rate-limit guest requests');
@@ -190,17 +198,17 @@ describe('Auth Middleware', () => {
 
 ## Test Architecture Issues
 
-| Issue | Impact | Fix |
-|-------|--------|-----|
-| Tests don't mock database | Tests would fail without Neon connection | Mock Drizzle or use testcontainers |
-| No test database setup | CI needs DATABASE_URL configured | Use Neon branches or in-memory SQLite |
-| No before/after hooks | State leaks between tests | Add user cleanup in afterEach |
+| Issue                     | Impact                                   | Fix                                   |
+| ------------------------- | ---------------------------------------- | ------------------------------------- |
+| Tests don't mock database | Tests would fail without Neon connection | Mock Drizzle or use testcontainers    |
+| No test database setup    | CI needs DATABASE_URL configured         | Use Neon branches or in-memory SQLite |
+| No before/after hooks     | State leaks between tests                | Add user cleanup in afterEach         |
 
 ## Source Files Evidence
 
-| File | Evidence |
-|------|----------|
-| Tests | `tests/app.test.js` |
-| Jest config | `jest.config.mjs` |
-| Coverage reports | `coverage/lcov.info`, `coverage/clover.xml` |
-| Package scripts | `package.json` — `"test": "NODE_OPTIONS=--experimental-vm-modules jest"` |
+| File             | Evidence                                                                 |
+| ---------------- | ------------------------------------------------------------------------ |
+| Tests            | `tests/app.test.js`                                                      |
+| Jest config      | `jest.config.mjs`                                                        |
+| Coverage reports | `coverage/lcov.info`, `coverage/clover.xml`                              |
+| Package scripts  | `package.json` — `"test": "NODE_OPTIONS=--experimental-vm-modules jest"` |

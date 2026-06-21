@@ -7,35 +7,35 @@
 ```mermaid
 graph TB
     Event[Git Event] --> Decision{Event Type}
-    
+
     Decision -->|Push to main| MainPipe[Main Pipeline]
     Decision -->|Push to staging| StagingPipe[Staging Pipeline]
     Decision -->|PR to main/staging| PRPipe[PR Pipeline]
     Decision -->|workflow_dispatch| Manual[Manual Dispatch]
-    
+
     subgraph "Main Pipeline"
         Lint1[Lint & Format]
         Test1[Tests]
         BuildPush[Docker Build & Push]
     end
-    
+
     subgraph "Staging / PR Pipeline"
         Lint2[Lint & Format]
         Test2[Tests]
     end
-    
+
     subgraph "Manual Dispatch"
         BuildPush2[Docker Build & Push]
     end
-    
+
     MainPipe --> Lint1
     Lint1 --> Test1
     Test1 --> BuildPush
-    
+
     StagingPipe --> Lint2
     PRPipe --> Lint2
     Lint2 --> Test2
-    
+
     Manual --> BuildPush2
 ```
 
@@ -43,44 +43,44 @@ graph TB
 
 **File**: `.github/workflows/lint-and-format.yml`
 
-| Property | Value |
-|----------|-------|
-| **Triggers** | Push and PR to `main` and `staging` |
-| **Runner** | ubuntu-latest |
-| **Node** | 20.x |
-| **Steps** | 1. Checkout | 2. Setup Node (with cache) | 3. npm ci | 4. npm run lint | 5. npm run format:check |
-| **Purpose** | Enforce code quality standards before merge |
+| Property     | Value                                       |
+| ------------ | ------------------------------------------- | -------------------------- | --------- | --------------- | ----------------------- |
+| **Triggers** | Push and PR to `main` and `staging`         |
+| **Runner**   | ubuntu-latest                               |
+| **Node**     | 20.x                                        |
+| **Steps**    | 1. Checkout                                 | 2. Setup Node (with cache) | 3. npm ci | 4. npm run lint | 5. npm run format:check |
+| **Purpose**  | Enforce code quality standards before merge |
 
 ### Workflow 2: Tests
 
 **File**: `.github/workflows/tests.yml`
 
-| Property | Value |
-|----------|-------|
-| **Triggers** | Push and PR to `main` and `staging` |
-| **Runner** | ubuntu-latest |
-| **Node** | 20.x |
-| **Steps** | 1. Checkout | 2. Setup Node (with cache) | 3. npm ci | 4. npm test (with env) | 5. Upload coverage artifacts (30-day retention) |
+| Property          | Value                                                           |
+| ----------------- | --------------------------------------------------------------- | -------------------------- | --------- | ---------------------- | ----------------------------------------------- |
+| **Triggers**      | Push and PR to `main` and `staging`                             |
+| **Runner**        | ubuntu-latest                                                   |
+| **Node**          | 20.x                                                            |
+| **Steps**         | 1. Checkout                                                     | 2. Setup Node (with cache) | 3. npm ci | 4. npm test (with env) | 5. Upload coverage artifacts (30-day retention) |
 | **Env Variables** | `DATABASE_URL`, `JWT_SECRET`, `LOG_LEVEL=error` (test-specific) |
-| **Purpose** | Run test suite and preserve coverage reports |
+| **Purpose**       | Run test suite and preserve coverage reports                    |
 
 ### Workflow 3: Docker Build and Push
 
 **File**: `.github/workflows/docker-build-and-push.yml`
 
-| Property | Value |
-|----------|-------|
-| **Triggers** | Push to `main` and `workflow_dispatch` |
-| **Runner** | ubuntu-latest |
-| **Registry** | Docker Hub (`docker.io`) |
-| **Image** | `${{ secrets.DOCKER_USERNAME }}/kubernetes-demo-api` |
-| **Platforms** | linux/amd64, linux/arm64 |
-| **Steps** | |
-| | 1. Checkout |
-| | 2. Setup Docker Buildx (multi-arch) |
-| | 3. Login to Docker Hub |
-| | 4. Docker metadata (tags: branch, SHA, latest, production timestamp) |
-| | 5. Build and push (multi-platform, with GHA cache) |
+| Property      | Value                                                                |
+| ------------- | -------------------------------------------------------------------- |
+| **Triggers**  | Push to `main` and `workflow_dispatch`                               |
+| **Runner**    | ubuntu-latest                                                        |
+| **Registry**  | Docker Hub (`docker.io`)                                             |
+| **Image**     | `${{ secrets.DOCKER_USERNAME }}/kubernetes-demo-api`                 |
+| **Platforms** | linux/amd64, linux/arm64                                             |
+| **Steps**     |                                                                      |
+|               | 1. Checkout                                                          |
+|               | 2. Setup Docker Buildx (multi-arch)                                  |
+|               | 3. Login to Docker Hub                                               |
+|               | 4. Docker metadata (tags: branch, SHA, latest, production timestamp) |
+|               | 5. Build and push (multi-platform, with GHA cache)                   |
 
 **Docker Tags Generated**:
 | Tag Pattern | Example | Usage |
@@ -97,26 +97,26 @@ sequenceDiagram
     participant Dev
     participant Local as Local Machine
     participant CI as GitHub Actions
-    
+
     Dev->>Local: npm run lint
     Local->>Local: ESLint check
     Local->>Local: Prettier check
-    
+
     Dev->>Local: npm run format
     Local->>Local: Auto-format code
-    
+
     Dev->>Local: npm test
     Local->>Local: Jest runs + coverage
-    
+
     Dev->>Local: npm run db:generate
     Local->>Local: Drizzle Kit generates migration
-    
+
     Dev->>Local: npm run db:migrate
     Local->>Local: Drizzle Kit applies migration
-    
+
     Dev->>Dev: git push
     Dev->>CI: Triggers workflows
-    
+
     CI->>CI: Lint & Format
     CI->>CI: Tests
     CI->>CI: Docker Build & Push (main only)
@@ -130,7 +130,7 @@ flowchart LR
         A[Code Changes] --> B[Local Lint/Test]
         B --> C[Commit & Push]
     end
-    
+
     subgraph "CI Checks"
         C --> D[GitHub Actions Trigger]
         D --> E{Lint Pass?}
@@ -139,13 +139,13 @@ flowchart LR
         G -->|No| F
         G -->|Yes| H{Branch = main?}
     end
-    
+
     subgraph "Release"
         H -->|Yes| I[Docker Build & Push]
         I --> J[Multi-arch Image Published]
         H -->|No| K[End (staging/PR only)]
     end
-    
+
     J --> L[Deploy to Production]
 ```
 
@@ -160,11 +160,11 @@ flowchart LR
 
 ## Environment Management
 
-| Environment | File | Source | Database | Docker Target |
-|-------------|------|--------|----------|---------------|
+| Environment     | File                             | Source              | Database   | Docker Target |
+| --------------- | -------------------------------- | ------------------- | ---------- | ------------- |
 | **Development** | `.env.development` (not tracked) | Copy `.env.example` | Neon Local | `development` |
-| **Production** | `.env.production` (not tracked) | Managed externally | Neon Cloud | `production` |
-| **Test (CI)** | Inline in workflow | GitHub Secrets | Ephemeral | N/A |
+| **Production**  | `.env.production` (not tracked)  | Managed externally  | Neon Cloud | `production`  |
+| **Test (CI)**   | Inline in workflow               | GitHub Secrets      | Ephemeral  | N/A           |
 
 ## Environment Variable Strategy
 
@@ -181,6 +181,7 @@ flowchart LR
 ## Scripts
 
 ### `scripts/dev.sh`
+
 - Checks for `.env.development`
 - Verifies Docker is running
 - Creates `.neon_local/` directory
@@ -189,6 +190,7 @@ flowchart LR
 - Starts `docker-compose.dev.yml`
 
 ### `scripts/prod.sh`
+
 - Checks for `.env.production`
 - Verifies Docker is running
 - Starts `docker-compose.prod.yml`
@@ -197,11 +199,11 @@ flowchart LR
 
 ## Source Files Evidence
 
-| Component | File |
-|-----------|------|
-| Lint workflow | `.github/workflows/lint-and-format.yml` |
-| Test workflow | `.github/workflows/tests.yml` |
+| Component             | File                                          |
+| --------------------- | --------------------------------------------- |
+| Lint workflow         | `.github/workflows/lint-and-format.yml`       |
+| Test workflow         | `.github/workflows/tests.yml`                 |
 | Docker build workflow | `.github/workflows/docker-build-and-push.yml` |
-| Dev startup | `scripts/dev.sh` |
-| Prod startup | `scripts/prod.sh` |
-| Package scripts | `package.json` (scripts section) |
+| Dev startup           | `scripts/dev.sh`                              |
+| Prod startup          | `scripts/prod.sh`                             |
+| Package scripts       | `package.json` (scripts section)              |

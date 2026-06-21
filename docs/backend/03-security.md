@@ -14,7 +14,7 @@ graph TB
         L7["Layer 7: Authentication (JWT)"]
         L8["Layer 8: Authorization (Role Check)"]
     end
-    
+
     Request[Request] --> L1
     L1 --> L2
     L2 --> L3
@@ -30,16 +30,16 @@ graph TB
 
 ### Mechanism: JWT via httpOnly Cookie
 
-| Property | Implementation | File |
-|----------|---------------|------|
-| Token type | JSON Web Token (JWT) | `src/utils/jwt.js` |
-| Storage | httpOnly cookie (not accessible via JavaScript) | `src/utils/cookies.js` |
-| Secure flag | Enabled in production | `src/utils/cookies.js:4` |
-| SameSite | Strict | `src/utils/cookies.js:5` |
-| MaxAge | 15 minutes | `src/utils/cookies.js:6` |
-| Token expiry | 1 day | `src/utils/jwt.js:5` |
-| Algorithm | HS256 (default for jsonwebtoken) | `src/utils/jwt.js` |
-| Secret | JWT_SECRET env var (with fallback) | `src/utils/jwt.js:4` |
+| Property     | Implementation                                  | File                     |
+| ------------ | ----------------------------------------------- | ------------------------ |
+| Token type   | JSON Web Token (JWT)                            | `src/utils/jwt.js`       |
+| Storage      | httpOnly cookie (not accessible via JavaScript) | `src/utils/cookies.js`   |
+| Secure flag  | Enabled in production                           | `src/utils/cookies.js:4` |
+| SameSite     | Strict                                          | `src/utils/cookies.js:5` |
+| MaxAge       | 15 minutes                                      | `src/utils/cookies.js:6` |
+| Token expiry | 1 day                                           | `src/utils/jwt.js:5`     |
+| Algorithm    | HS256 (default for jsonwebtoken)                | `src/utils/jwt.js`       |
+| Secret       | JWT_SECRET env var (with fallback)              | `src/utils/jwt.js:4`     |
 
 ### Cookie Security Flow
 
@@ -47,13 +47,13 @@ graph TB
 sequenceDiagram
     participant Browser
     participant Server
-    
+
     Browser->>Server: POST /api/auth/sign-in {email, password}
     Server->>Server: Validate, authenticate
     Server->>Server: Sign JWT
     Server-->>Browser: Set-Cookie: token=<JWT>
     Note over Browser: httpOnly: true, secure: true (prod), sameSite: strict, maxAge: 900000
-    
+
     Browser->>Server: GET /api/users
     Note over Browser: Cookie sent automatically
     Server->>Server: Verify JWT
@@ -61,11 +61,13 @@ sequenceDiagram
 ```
 
 **Strengths**:
+
 - httpOnly prevents XSS-based token theft
 - SameSite=Strict prevents CSRF
 - Secure flag in production prevents MITM
 
 **Weaknesses**:
+
 - Secret fallback in code (hardcoded default)
 - No token rotation/refresh mechanism
 - No token revocation capability
@@ -75,44 +77,44 @@ sequenceDiagram
 
 ### Role-Based Access Control
 
-| Check | Location | Enforcement |
-|-------|----------|-------------|
-| Valid JWT required | `src/middleware/auth.middleware.js:6-7` | 401 if missing/expired/invalid |
-| Role check (admin) | `src/middleware/auth.middleware.js:17-28` | 403 if role not in allowed list |
-| Self-only update | `src/controllers/users.controller.js:44-45` | 403 if non-admin updates others |
-| Admin-only role changes | `src/controllers/users.controller.js:47-48` | 403 if non-admin sends role |
-| Self-delete blocked | `src/controllers/users.controller.js:74` | 403 if user deletes own account |
+| Check                   | Location                                    | Enforcement                     |
+| ----------------------- | ------------------------------------------- | ------------------------------- |
+| Valid JWT required      | `src/middleware/auth.middleware.js:6-7`     | 401 if missing/expired/invalid  |
+| Role check (admin)      | `src/middleware/auth.middleware.js:17-28`   | 403 if role not in allowed list |
+| Self-only update        | `src/controllers/users.controller.js:44-45` | 403 if non-admin updates others |
+| Admin-only role changes | `src/controllers/users.controller.js:47-48` | 403 if non-admin sends role     |
+| Self-delete blocked     | `src/controllers/users.controller.js:74`    | 403 if user deletes own account |
 
 ### Authorization Matrix
 
-| Action | Guest | User (self) | User (other) | Admin |
-|--------|-------|-------------|--------------|-------|
-| Register | Yes | - | - | - |
-| Sign In | Yes | - | - | - |
-| List Users | No | Yes | Yes | Yes |
-| Get User by ID | No | Yes | Yes | Yes |
-| Update User | No | Yes | No | Yes |
-| Change Role | No | No | No | Yes |
-| Delete User | No | No | No | Yes (not self) |
+| Action         | Guest | User (self) | User (other) | Admin          |
+| -------------- | ----- | ----------- | ------------ | -------------- |
+| Register       | Yes   | -           | -            | -              |
+| Sign In        | Yes   | -           | -            | -              |
+| List Users     | No    | Yes         | Yes          | Yes            |
+| Get User by ID | No    | Yes         | Yes          | Yes            |
+| Update User    | No    | Yes         | No           | Yes            |
+| Change Role    | No    | No          | No           | Yes            |
+| Delete User    | No    | No          | No           | Yes (not self) |
 
 ## Secrets Management
 
-| Secret | Location | Risk Level | Issue |
-|--------|----------|------------|-------|
-| DATABASE_URL | `.env` (committed) | CRITICAL | Production database credentials in version control |
-| ARCJET_KEY | `.env` (committed) | HIGH | Arcjet API key in version control |
-| JWT_SECRET | `src/utils/jwt.js` (fallback) | HIGH | Hardcoded fallback: 'your-secret-key-please-change-in-production' |
-| JWT_SECRET | `.env` (expected) | MEDIUM | Must be set in production env |
-| NODE_ENV | `.env` | LOW | Controls secure cookie behavior |
+| Secret       | Location                      | Risk Level | Issue                                                             |
+| ------------ | ----------------------------- | ---------- | ----------------------------------------------------------------- |
+| DATABASE_URL | `.env` (committed)            | CRITICAL   | Production database credentials in version control                |
+| ARCJET_KEY   | `.env` (committed)            | HIGH       | Arcjet API key in version control                                 |
+| JWT_SECRET   | `src/utils/jwt.js` (fallback) | HIGH       | Hardcoded fallback: 'your-secret-key-please-change-in-production' |
+| JWT_SECRET   | `.env` (expected)             | MEDIUM     | Must be set in production env                                     |
+| NODE_ENV     | `.env`                        | LOW        | Controls secure cookie behavior                                   |
 
 ## Encryption
 
-| Data | Encryption | Algorithm | Notes |
-|------|-----------|-----------|-------|
-| Passwords | bcrypt hash | bcrypt (10 rounds) | One-way hash, salted |
-| JWT tokens | HMAC-SHA256 | HS256 | Symmetric signing |
-| Transport (dev) | None (HTTP) | - | Localhost only |
-| Transport (prod) | TLS (expected) | - | Not configured in code, requires reverse proxy |
+| Data             | Encryption     | Algorithm          | Notes                                          |
+| ---------------- | -------------- | ------------------ | ---------------------------------------------- |
+| Passwords        | bcrypt hash    | bcrypt (10 rounds) | One-way hash, salted                           |
+| JWT tokens       | HMAC-SHA256    | HS256              | Symmetric signing                              |
+| Transport (dev)  | None (HTTP)    | -                  | Localhost only                                 |
+| Transport (prod) | TLS (expected) | -                  | Not configured in code, requires reverse proxy |
 
 ## Security Risks & Recommendations
 
@@ -166,7 +168,7 @@ graph TB
         TA2[Malicious Authenticated User]
         TA3[Compromised Admin Account]
     end
-    
+
     subgraph "Attack Vectors"
         AV1[Brute Force / Credential Stuffing]
         AV2[Bot / Automated Scraping]
@@ -176,7 +178,7 @@ graph TB
         AV6[JWT Secret Guessing]
         AV7[Privilege Escalation]
     end
-    
+
     subgraph "Mitigations"
         M1[Arcjet Rate Limiting]
         M2[Arcjet Bot Detection]
@@ -186,7 +188,7 @@ graph TB
         M6[Strong JWT secret required]
         M7[Role checks in controller + middleware]
     end
-    
+
     TA1 --> AV1
     TA1 --> AV2
     TA1 --> AV3
@@ -194,7 +196,7 @@ graph TB
     TA2 --> AV4
     TA2 --> AV7
     TA3 --> AV7
-    
+
     AV1 --> M1
     AV2 --> M2
     AV3 --> M3
@@ -206,33 +208,33 @@ graph TB
 
 ## OWASP Top 10 Mapping
 
-| OWASP Category | Status | Evidence |
-|---------------|--------|----------|
-| A01: Broken Access Control | ⚠️ Partial | Role-based checks, but user can register as admin |
-| A02: Cryptographic Failures | ⚠️ Partial | bcrypt for passwords, but JWT secret fallback |
-| A03: Injection | ✅ Mitigated | Parameterized queries via Drizzle ORM |
-| A04: Insecure Design | ⚠️ Partial | Rate limiting present, but no account lockout |
-| A05: Security Misconfiguration | ⚠️ Partial | Helmet active, CORS permissive |
-| A06: Vulnerable Components | ⚠️ Requires audit | Dependencies should be scanned (npm audit) |
-| A07: ID & Auth Failures | ⚠️ Partial | JWT cookies secure, but no MFA, no session revoke |
-| A08: Data Integrity Failures | ⚠️ Partial | JWT signed but no nonce/audience claims |
-| A09: Logging & Monitoring | ✅ Present | Winston logging, error tracking |
-| A10: SSRF | ❌ Not assessed | No outbound URL fetching in app |
+| OWASP Category                 | Status            | Evidence                                          |
+| ------------------------------ | ----------------- | ------------------------------------------------- |
+| A01: Broken Access Control     | ⚠️ Partial        | Role-based checks, but user can register as admin |
+| A02: Cryptographic Failures    | ⚠️ Partial        | bcrypt for passwords, but JWT secret fallback     |
+| A03: Injection                 | ✅ Mitigated      | Parameterized queries via Drizzle ORM             |
+| A04: Insecure Design           | ⚠️ Partial        | Rate limiting present, but no account lockout     |
+| A05: Security Misconfiguration | ⚠️ Partial        | Helmet active, CORS permissive                    |
+| A06: Vulnerable Components     | ⚠️ Requires audit | Dependencies should be scanned (npm audit)        |
+| A07: ID & Auth Failures        | ⚠️ Partial        | JWT cookies secure, but no MFA, no session revoke |
+| A08: Data Integrity Failures   | ⚠️ Partial        | JWT signed but no nonce/audience claims           |
+| A09: Logging & Monitoring      | ✅ Present        | Winston logging, error tracking                   |
+| A10: SSRF                      | ❌ Not assessed   | No outbound URL fetching in app                   |
 
 ## Source Files Evidence
 
-| Security Feature | File | Line(s) |
-|-----------------|------|---------|
-| Helmet middleware | `src/app.js` | 7 |
-| CORS (permissive) | `src/app.js` | 8 |
-| Cookie parser | `src/app.js` | 10 |
-| Arcjet security | `src/middleware/security.middleware.js` | All |
-| Arcjet configuration | `src/config/arcjet.js` | All |
-| JWT utilities | `src/utils/jwt.js` | All |
-| Cookie utilities | `src/utils/cookies.js` | All |
-| Auth middleware | `src/middleware/auth.middleware.js` | All |
-| Role authorization | `src/middleware/auth.middleware.js` | 17-28 |
-| Password hashing | `src/services/auth.service.js` | 6-14 |
-| Zod validation | `src/validations/*.js` | All |
-| Secrets in .env | `.env` | All |
-| JWT secret fallback | `src/utils/jwt.js` | 4 |
+| Security Feature     | File                                    | Line(s) |
+| -------------------- | --------------------------------------- | ------- |
+| Helmet middleware    | `src/app.js`                            | 7       |
+| CORS (permissive)    | `src/app.js`                            | 8       |
+| Cookie parser        | `src/app.js`                            | 10      |
+| Arcjet security      | `src/middleware/security.middleware.js` | All     |
+| Arcjet configuration | `src/config/arcjet.js`                  | All     |
+| JWT utilities        | `src/utils/jwt.js`                      | All     |
+| Cookie utilities     | `src/utils/cookies.js`                  | All     |
+| Auth middleware      | `src/middleware/auth.middleware.js`     | All     |
+| Role authorization   | `src/middleware/auth.middleware.js`     | 17-28   |
+| Password hashing     | `src/services/auth.service.js`          | 6-14    |
+| Zod validation       | `src/validations/*.js`                  | All     |
+| Secrets in .env      | `.env`                                  | All     |
+| JWT secret fallback  | `src/utils/jwt.js`                      | 4       |

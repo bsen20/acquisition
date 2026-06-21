@@ -14,6 +14,7 @@
    - `src/services/auth.service.js` — Business logic
 
 5. **Run the project**:
+
    ```bash
    npm install
    npm run dev:docker  # if Docker is available
@@ -55,13 +56,13 @@ flowchart TB
 
 ### Key Patterns to Understand
 
-| Pattern | Files | Key Takeaway |
-|---------|-------|-------------|
-| Controller-Service separation | `controllers/*`, `services/*` | Controllers handle HTTP; services handle logic |
-| Middleware chain | `middleware/*`, `app.js` | Cross-cutting concerns (auth, security) applied before routes |
-| Import maps | `package.json` | `#` aliases for clean imports |
-| Zod validation | `validations/*` | Schema-based input validation with parsing |
-| Error handling | All controllers | try-catch with status-specific error responses |
+| Pattern                       | Files                         | Key Takeaway                                                  |
+| ----------------------------- | ----------------------------- | ------------------------------------------------------------- |
+| Controller-Service separation | `controllers/*`, `services/*` | Controllers handle HTTP; services handle logic                |
+| Middleware chain              | `middleware/*`, `app.js`      | Cross-cutting concerns (auth, security) applied before routes |
+| Import maps                   | `package.json`                | `#` aliases for clean imports                                 |
+| Zod validation                | `validations/*`               | Schema-based input validation with parsing                    |
+| Error handling                | All controllers               | try-catch with status-specific error responses                |
 
 ### Database Understanding
 
@@ -97,6 +98,7 @@ flowchart TB
 ### Testing Strategy
 
 Current tests are minimal (3 health checks). Key areas needing tests:
+
 - Auth flows (signup, signin, signout)
 - User CRUD operations
 - Auth middleware (no token, invalid token, role checks)
@@ -106,13 +108,13 @@ Current tests are minimal (3 health checks). Key areas needing tests:
 
 ### Critical Knowledge Areas
 
-| Area | Why Important | Key Files |
-|------|---------------|-----------|
-| **Auth security** | Core of the system, security-critical | `auth.middleware.js`, `security.middleware.js`, `jwt.js` |
-| **Docker deployment** | Production delivery mechanism | `Dockerfile`, `docker-compose.prod.yml` |
-| **CI/CD pipeline** | Release automation | `.github/workflows/` |
-| **Database schema** | Foundation for future features | `user.model.js`, `drizzle/` |
-| **Error handling** | Production reliability | All controller files |
+| Area                  | Why Important                         | Key Files                                                |
+| --------------------- | ------------------------------------- | -------------------------------------------------------- |
+| **Auth security**     | Core of the system, security-critical | `auth.middleware.js`, `security.middleware.js`, `jwt.js` |
+| **Docker deployment** | Production delivery mechanism         | `Dockerfile`, `docker-compose.prod.yml`                  |
+| **CI/CD pipeline**    | Release automation                    | `.github/workflows/`                                     |
+| **Database schema**   | Foundation for future features        | `user.model.js`, `drizzle/`                              |
+| **Error handling**    | Production reliability                | All controller files                                     |
 
 ### Production Concerns
 
@@ -124,15 +126,15 @@ Current tests are minimal (3 health checks). Key areas needing tests:
 
 ### Who to Go To For Help
 
-| Topic | Resource |
-|-------|----------|
-| JavaScript Mastery tutorials | YouTube channel |
-| Express 5 docs | expressjs.com |
-| Drizzle ORM | orm.drizzle.team |
-| Neon DB | neon.tech/docs |
-| Arcjet | arcjet.com/docs |
-| Docker | docs.docker.com |
-| GitHub Actions | docs.github.com/actions |
+| Topic                        | Resource                |
+| ---------------------------- | ----------------------- |
+| JavaScript Mastery tutorials | YouTube channel         |
+| Express 5 docs               | expressjs.com           |
+| Drizzle ORM                  | orm.drizzle.team        |
+| Neon DB                      | neon.tech/docs          |
+| Arcjet                       | arcjet.com/docs         |
+| Docker                       | docs.docker.com         |
+| GitHub Actions               | docs.github.com/actions |
 
 ### Key Contacts
 
@@ -154,20 +156,20 @@ graph TB
         UserSvc["src/services/users.service.js"]
         Model["src/models/user.model.js"]
     end
-    
+
     subgraph "Configuration Files"
         Logger["src/config/logger.js"]
         DB["src/config/database.js"]
         Arcjet["src/config/arcjet.js"]
         JWT["src/utils/jwt.js"]
     end
-    
+
     subgraph "Infrastructure Files"
         Docker["Dockerfile"]
         DevCompose["docker-compose.dev.yml"]
         ProdCompose["docker-compose.prod.yml"]
     end
-    
+
     App --> AuthCtrl
     App --> UserCtrl
     App --> AuthMW
@@ -180,3 +182,4 @@ graph TB
     UserSvc --> DB
     SecMW --> Arcjet
     AuthMW --> JWT
+```

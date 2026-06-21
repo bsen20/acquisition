@@ -7,12 +7,14 @@
 **Strong Answer**: It solves the recurring engineering challenge of building a secure authentication and user management system from scratch. Every web application needs user registration, login, session management, and access control. This project provides a production-ready reference implementation that saves teams 2-3 weeks of development time.
 
 **Follow-up**: What specific user needs does it address?
+
 - Secure account creation and login
 - Role-based access to features
 - Protection against common attacks (bots, rate limiting, injection)
 - Easy deployment with Docker
 
 **Deep Follow-up**: How would you measure the business value of this project?
+
 - Development time saved vs building from scratch
 - Security incidents prevented vs a naive implementation
 - Deployment frequency enabled by CI/CD and Docker
@@ -24,6 +26,7 @@
 ### Q: Describe the architecture pattern used.
 
 **Strong Answer**: The project follows a Layered Architecture with MVC conventions. Layers are:
+
 1. **Presentation** (Routes + Controllers) — Handle HTTP concerns
 2. **Application** (Middleware + Validation) — Cross-cutting security/auth
 3. **Domain** (Services + Models) — Business logic and database schema
@@ -57,6 +60,7 @@ Since JWTs are stateless, you'd need either: a token blacklist (Redis), short ex
 ### Q: Why a single users table?
 
 **Strong Answer**: The project is focused on authentication and user management. A single users table is appropriate because:
+
 - The only domain entity is User
 - Auth systems don't need complex relationships
 - It keeps the schema simple and fast
@@ -90,7 +94,8 @@ Needed changes: (1) Create Kubernetes manifests (Deployment, Service, Ingress, C
 
 **Strong Answer**: Critical issues: (1) `.env` committed with real database credentials and API keys, (2) Hardcoded JWT secret fallback in code, (3) CORS allows all origins (no configuration). High issues: (4) No input sanitization beyond type checking, (5) No email verification, (6) Permissive rate limiting on auth endpoints (brute force protection is weak).
 
-**Follow-up**: How would you fix these? 
+**Follow-up**: How would you fix these?
+
 1. Remove `.env` from git, rotate all credentials, add `.env.example`
 2. Remove JWT fallback; crash at startup if JWT_SECRET not set
 3. Configure CORS with explicit allowed origins
@@ -137,7 +142,8 @@ Production concerns: (1) No deployment step (just builds images), (2) No integra
 
 ### Q: Walk me through the sign-in flow.
 
-**Strong Answer**: 
+**Strong Answer**:
+
 1. `POST /api/auth/sign-in` hits Express route
 2. Security middleware runs: Arcjet checks bot, shield, rate limit
 3. Route matches `auth.routes.js` POST handler
@@ -152,10 +158,15 @@ Production concerns: (1) No deployment step (just builds images), (2) No integra
 9. Returns 200 JSON with user data
 
 **Key code**:
+
 ```javascript
 // src/controllers/auth.controller.js:42-63
 const user = await authenticateUser({ email, password });
-const token = jwttoken.sign({ id: user.id, email: user.email, role: user.role });
+const token = jwttoken.sign({
+  id: user.id,
+  email: user.email,
+  role: user.role,
+});
 cookies.set(res, 'token', token);
 res.status(200).json({ message: 'User signed in successfully', user });
 ```
@@ -177,7 +188,8 @@ P1: Auth integration tests (signup success, duplicate email, signin success, wro
 
 ### Q: The app is returning 500 errors for all requests. Walk through your debugging process.
 
-**Strong Answer**: 
+**Strong Answer**:
+
 1. **Check health**: `GET /health` — if it passes, the issue is in application logic; if it fails, the server is down.
 2. **Check logs**: `tail -100 logs/combined.log` and `logs/error.lg` for error patterns.
 3. **Check container**: `docker ps` (is it running?), `docker logs acquisitions-app-prod` (any crash?).
@@ -192,10 +204,10 @@ If database is down: restart or failover. If code regression: rollback deploymen
 
 ## Interview Traps to Avoid
 
-| Trap | Why It's a Trap | Better Answer |
-|------|----------------|---------------|
-| "It's perfect" | No system is perfect | Acknowledge tradeoffs and technical debt |
-| "JWT is more secure than sessions" | Both have different threat models | Compare XSS vs CSRF tradeoffs accurately |
-| "We should use TypeScript" | Only if it provides value for the project | Discuss pros/cons in context of the project scope |
-| "Rate limiting is too aggressive" | It's configurable | Explain the per-role design philosophy |
-| "The .env issue isn't a big deal" | It's a critical security vulnerability | Call it out as the #1 thing to fix |
+| Trap                               | Why It's a Trap                           | Better Answer                                     |
+| ---------------------------------- | ----------------------------------------- | ------------------------------------------------- |
+| "It's perfect"                     | No system is perfect                      | Acknowledge tradeoffs and technical debt          |
+| "JWT is more secure than sessions" | Both have different threat models         | Compare XSS vs CSRF tradeoffs accurately          |
+| "We should use TypeScript"         | Only if it provides value for the project | Discuss pros/cons in context of the project scope |
+| "Rate limiting is too aggressive"  | It's configurable                         | Explain the per-role design philosophy            |
+| "The .env issue isn't a big deal"  | It's a critical security vulnerability    | Call it out as the #1 thing to fix                |
